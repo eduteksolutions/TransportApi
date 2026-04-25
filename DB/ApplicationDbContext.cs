@@ -1,6 +1,7 @@
 ﻿
 
 using Microsoft.EntityFrameworkCore;
+using TransportApi.Models;
 namespace TransportApi.Data
 
 {
@@ -10,6 +11,7 @@ namespace TransportApi.Data
         { 
             
         }
+        public DbSet<VehicleLiveLocation> VehicleLiveLocations { get; set; }
 
     }
 }
