@@ -28,7 +28,7 @@ if (app.Environment.IsProduction())
 }
 
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 // Configure the HTTP request pipeline.
 
