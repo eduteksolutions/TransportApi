@@ -19,6 +19,8 @@ builder.Services.AddSignalR();
 //Config.Application["BASE_URL"]= "https:\\eduteksolutions.in";
 
 var app = builder.Build();
+app.UseWebSockets();
+app.UseCors("AllowAll");
 app.MapHub<DataHub>("/hub");
 
 if (app.Environment.IsProduction())

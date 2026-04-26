@@ -10,6 +10,6 @@ namespace TransportApi.Data
             
         }
         public DbSet<VehicleLiveLocation> VehicleLiveLocations { get; set; }
-
+        
     }
 }
