@@ -21,7 +21,7 @@ builder.Services.AddSignalR();
 var app = builder.Build();
 app.UseWebSockets();
 app.UseCors("AllowAll");
-app.MapHub<DataHub>("/hub");
+app.MapHub<DataHub>("/dataHub");
 
 if (app.Environment.IsProduction())
 {
