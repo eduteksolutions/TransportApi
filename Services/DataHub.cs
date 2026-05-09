@@ -4,15 +4,40 @@ namespace TransportApi
 {
     public class DataHub : Hub
     {
-        public async Task JoinVehicleGroup(string vehicleNo)
+        // =========================
+        // JOIN SCHOOL DEVICE GROUP
+        // =========================
+        public async Task JoinDeviceGroup(
+            int schoolId,
+            string deviceId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, vehicleNo);
-        }
-        public async Task JoinDeviceGroup(string deviceId)
-        {
-            if (string.IsNullOrWhiteSpace(deviceId)) return;
+            if (string.IsNullOrWhiteSpace(deviceId))
+                return;
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, deviceId.Trim().ToUpper());
+            var group =
+                $"{schoolId}_{deviceId.Trim().ToUpper()}";
+
+            await Groups.AddToGroupAsync(
+                Context.ConnectionId,
+                group);
+        }
+
+        // =========================
+        // LEAVE GROUP
+        // =========================
+        public async Task LeaveDeviceGroup(
+            int schoolId,
+            string deviceId)
+        {
+            if (string.IsNullOrWhiteSpace(deviceId))
+                return;
+
+            var group =
+                $"{schoolId}_{deviceId.Trim().ToUpper()}";
+
+            await Groups.RemoveFromGroupAsync(
+                Context.ConnectionId,
+                group);
         }
     }
 }
