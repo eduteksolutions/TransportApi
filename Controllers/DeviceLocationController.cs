@@ -8,7 +8,7 @@ using TransportApi.Models.TransportApi.Models;
 namespace TransportApi.Controllers
 {
     [ApiController]
-    [Route("api/device/location")]
+    [Route("api/device")]
     public class DeviceLocationController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
