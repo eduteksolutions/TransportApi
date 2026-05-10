@@ -2,6 +2,8 @@ using TransportApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
 using TransportApi;
+using static System.Net.WebRequestMethods;
+using TransportApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+// ================= GPS SERVICES =================
+builder.Services.AddScoped<GpsService>();
+builder.Services.AddHostedService<GpsBackgroundService>();
+
 
 builder.Services.AddSignalR();
 

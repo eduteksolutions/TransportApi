@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using TransportApi.Data;
 using TransportApi.Models;
+using TransportApi.Models.TransportApi.Models;
 
 namespace TransportApi.Services
 {
@@ -29,9 +30,6 @@ namespace TransportApi.Services
         {
             try
             {
-                // =========================
-                // GET SCHOOL TOKEN
-                // =========================
                 var setting = await _context.SchoolGpsSettings
                     .FirstOrDefaultAsync(x =>
                         x.SchoolId == schoolId &&
@@ -40,9 +38,6 @@ namespace TransportApi.Services
                 if (setting == null)
                     return;
 
-                // =========================
-                // API URL
-                // =========================
                 var url =
                     $"{setting.ApiUrl}?accessToken={setting.AccessToken}";
 
@@ -57,9 +52,8 @@ namespace TransportApi.Services
                 if (devices == null || !devices.Any())
                     return;
 
-                // =========================
-                // LOOP DEVICES
-                // =========================
+                var logsToSave = new List<VehicleDeviceLiveLocation>();
+
                 foreach (var device in devices)
                 {
                     var deviceId = device["deviceUniqueId"]
@@ -70,54 +64,65 @@ namespace TransportApi.Services
                     if (string.IsNullOrWhiteSpace(deviceId))
                         continue;
 
-                    var data = new
+                    var dto = new DeviceLocationDto
                     {
-                        schoolId,
-                        deviceId,
+                        SchoolId = schoolId,
+                        DeviceId = deviceId,
 
-                        latitude = device["latitude"]
-                            ?.ToObject<double>(),
+                        Latitude = device["latitude"]?.ToObject<double>() ?? 0,
+                        Longitude = device["longitude"]?.ToObject<double>() ?? 0,
 
-                        longitude = device["longitude"]
-                            ?.ToObject<double>(),
+                        Speed = device["speed"]?.ToObject<double>(),
+                        Altitude = device["altitude"]?.ToObject<double>(),
+                        Course = device["course"]?.ToObject<double>(),
 
-                        altitude = device["altitude"]
-                            ?.ToObject<double>(),
+                        Ignition = device["attributes"]?["ignition"]?.ToObject<bool>(),
+                        BatteryLevel = device["attributes"]?["batteryLevel"]?.ToObject<double>(),
+                        Motion = device["attributes"]?["motion"]?.ToObject<bool>(),
 
-                        speed = device["speed"]
-                            ?.ToObject<double>(),
-
-                        course = device["course"]
-                            ?.ToObject<double>(),
-
-                        ignition = device["attributes"]?["ignition"]
-                            ?.ToObject<bool>(),
-
-                        battery = device["attributes"]?["batteryLevel"]
-                            ?.ToObject<double>(),
-
-                        motion = device["attributes"]?["motion"]
-                            ?.ToObject<bool>(),
-
-                        name = device["name"]?.ToString(),
-
-                        updatedAt = DateTime.UtcNow
+                        RawData = device.ToString()
                     };
 
-                    // =========================
-                    // GROUP NAME
-                    // =========================
-                    var groupName =
-                        $"{schoolId}_{deviceId}";
+                    // ❌ skip invalid GPS
+                    if (dto.Latitude == 0 || dto.Longitude == 0)
+                        continue;
+
+                    if (Math.Abs(dto.Latitude) > 90 || Math.Abs(dto.Longitude) > 180)
+                        continue;
 
                     // =========================
-                    // SIGNALR SEND
+                    // SIGNALR GROUP
                     // =========================
+                    var groupName = $"{schoolId}_{deviceId}";
+
                     await _hub.Clients
                         .Group(groupName)
-                        .SendAsync(
-                            "ReceiveLocation",
-                            data);
+                        .SendAsync("ReceiveLocation", dto);
+
+                    // =========================
+                    // SAVE TO DB (HISTORY)
+                    // =========================
+                    logsToSave.Add(new VehicleDeviceLiveLocation
+                    {
+                        SchoolId = dto.SchoolId,
+                        DeviceId = dto.DeviceId,
+                        Latitude = dto.Latitude,
+                        Longitude = dto.Longitude,
+                        Speed = dto.Speed,
+                        Course = dto.Course,
+                        Altitude = dto.Altitude,
+                        Timestamp = DateTime.UtcNow,
+                        Date = DateTime.UtcNow.Date
+                    });
+                }
+
+                // =========================
+                // BULK SAVE (IMPORTANT)
+                // =========================
+                if (logsToSave.Count > 0)
+                {
+                    await _context.VehicleDeviceLiveLocations.AddRangeAsync(logsToSave);
+                    await _context.SaveChangesAsync();
                 }
             }
             catch (Exception ex)

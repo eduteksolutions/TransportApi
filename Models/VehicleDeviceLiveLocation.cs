@@ -28,6 +28,13 @@
             public bool? Ignition { get; set; }
             public bool? Motion { get; set; }
 
+            // ⏱ EXACT GPS TIME (from server or device)
+            public DateTime Timestamp { get; set; }
+
+            // 📅 DATE (for fast filtering)
+            public DateTime Date { get; set; }
+
+
             // ⏱ LAST UPDATE
             public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
