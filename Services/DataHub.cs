@@ -27,6 +27,8 @@ namespace TransportApi
         // =========================
         public async Task LeaveDeviceGroup(
             int schoolId,
+
+
             string deviceId)
         {
             if (string.IsNullOrWhiteSpace(deviceId))

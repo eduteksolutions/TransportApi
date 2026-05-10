@@ -17,7 +17,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+builder.Services.AddHttpClient();
 // ================= GPS SERVICES =================
 builder.Services.AddScoped<GpsService>();
 builder.Services.AddHostedService<GpsBackgroundService>();
