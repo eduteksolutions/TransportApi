@@ -73,6 +73,9 @@ namespace TransportApi.Controllers
 
             if (latest == null)
             {
+
+
+
                 return NotFound(new
                 {
                     message = "No location found"
