@@ -25,6 +25,10 @@ builder.Services.AddHostedService<GpsBackgroundService>();
 
 builder.Services.AddSignalR();
 
+builder.Services.AddHttpClient<BusProximityService>();
+builder.Services.AddScoped<BusProximityService>();
+
+
 // ================= CORS =================
 builder.Services.AddCors(options =>
 {
