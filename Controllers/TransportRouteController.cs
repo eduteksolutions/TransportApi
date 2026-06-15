@@ -109,14 +109,14 @@ namespace TransportApi.Controllers
                 {
                     return Ok(new
                     {
-                        Status = Convert.ToInt32(dt.Rows[0]["Status"]),
+                       
                         Message = dt.Rows[0]["Message"].ToString()
                     });
                 }
 
                 return Ok(new
                 {
-                    Status = 0,
+                  
                     Message = "No response received from database."
                 });
             }
@@ -124,7 +124,7 @@ namespace TransportApi.Controllers
             {
                 return StatusCode(500, new
                 {
-                    Status = 0,
+                  
                     Message = ex.Message
                 });
             }
