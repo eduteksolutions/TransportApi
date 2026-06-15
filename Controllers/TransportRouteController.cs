@@ -17,36 +17,6 @@ namespace TransportApi.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var list = new List<object>();
-
-            using SqlConnection con = new SqlConnection(
-                _configuration.GetConnectionString("DefaultConnection"));
-
-            SqlCommand cmd = new SqlCommand(
-                "SELECT * FROM edu.TransportRouteMaster",
-                con);
-
-            con.Open();
-
-            SqlDataReader dr = cmd.ExecuteReader();
-
-            while (dr.Read())
-            {
-                list.Add(new
-                {
-                    rCd = dr["rCd"],
-                    routeCode = dr["routeCode"],
-                    routeName = dr["routeName"],
-                    description = dr["description"]
-                });
-            }
-
-            return Ok(list);
-        }
-
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
@@ -129,8 +99,8 @@ namespace TransportApi.Controllers
                 });
             }
         }
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] TransportRouteMaster model)
+        [HttpPut("{id}/{userid}")]
+        public IActionResult Update(int id, int userid, [FromBody] TransportRouteMaster model)
         {
             using SqlConnection con = new SqlConnection(
                 _configuration.GetConnectionString("DefaultConnection"));
@@ -147,31 +117,30 @@ namespace TransportApi.Controllers
             cmd.Parameters.AddWithValue("@description", model.description);
             cmd.Parameters.AddWithValue("@loginName", model.loginName);
             cmd.Parameters.AddWithValue("@lUserDt", DateTime.Now.Date);
-            cmd.Parameters.AddWithValue("@UserID", model.UserID);
+            cmd.Parameters.AddWithValue("@UserID", userid);
 
             con.Open();
             cmd.ExecuteNonQuery();
 
-            return Ok("Updated Successfully");
+            return Ok($"Updated Successfully by user {userid}");
         }
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpDelete("{id}/{userid}")]
+         public IActionResult Delete(int id, int userid)
         {
             using SqlConnection con = new SqlConnection(
                 _configuration.GetConnectionString("DefaultConnection"));
 
             SqlCommand cmd = new SqlCommand(
-                "DELETE FROM edu.TransportRouteMaster WHERE rCd=@rCd",
+                "DELETE FROM edu.TransportRouteMaster WHERE rCd=@rCd and  UserID=@UserID",
                 con);
 
             cmd.Parameters.AddWithValue("@rCd", id);
+            cmd.Parameters.AddWithValue("@UserID", userid);
 
             con.Open();
             cmd.ExecuteNonQuery();
 
-            return Ok("Deleted Successfully");
+            return Ok($"Deleted Successfully by user {userid}");
         }
-
     }
 }
