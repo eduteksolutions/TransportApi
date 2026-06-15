@@ -9,11 +9,11 @@ namespace TransportApi.Controllers
   
         [Route("api/[controller]")]
         [ApiController]
-        public class TransportSubRoutController : ControllerBase
+        public class TransportSubRouteController : ControllerBase
         {
             private readonly IConfiguration _configuration;
 
-            public TransportSubRoutController(IConfiguration configuration)
+            public TransportSubRouteController(IConfiguration configuration)
             {
                 _configuration = configuration;
             }
