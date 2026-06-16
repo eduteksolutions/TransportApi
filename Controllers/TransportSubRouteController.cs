@@ -102,7 +102,6 @@ namespace TransportApi.Controllers
 
             cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddWithValue("@subRouteCd", model.subRouteCd);
             cmd.Parameters.AddWithValue("@subRouteCode", model.subRouteCode);
             cmd.Parameters.AddWithValue("@subRouteName", model.subRouteName);
             cmd.Parameters.AddWithValue("@rCd", model.rCd);
@@ -124,8 +123,8 @@ namespace TransportApi.Controllers
             });
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] TransportSubRouteMaster model)
+        [HttpPut("{id}/{userid}")]
+        public IActionResult Update(int id, int userid, [FromBody] TransportSubRouteMaster model)
         {
             if (model == null)
                 return BadRequest("Invalid data");
@@ -134,16 +133,17 @@ namespace TransportApi.Controllers
                 _configuration.GetConnectionString("DefaultConnection"));
 
             SqlCommand cmd = new SqlCommand(@"
-        UPDATE edu.TransportSubRouteMaster
-        SET
-            subRouteCode=@subRouteCode,
-            subRouteName=@subRouteName,
-            rCd=@rCd,
-            Descr=@Descr,
-            LoginName=@LoginName,
-            lUserDt=@lUserDt,
-            UserID=@UserID
-        WHERE subRouteCd=@subRouteCd", con);
+    UPDATE edu.TransportSubRouteMaster
+    SET
+        subRouteCode = @subRouteCode,
+        subRouteName = @subRouteName,
+        rCd = @rCd,
+        Descr = @Descr,
+        LoginName = @LoginName,
+        lUserDt = @lUserDt,
+        UserID = @UserID
+    WHERE subRouteCd = @subRouteCd
+      AND UserID = @UserID", con);
 
             cmd.Parameters.AddWithValue("@subRouteCd", id);
             cmd.Parameters.AddWithValue("@subRouteCode", model.subRouteCode);
@@ -152,7 +152,7 @@ namespace TransportApi.Controllers
             cmd.Parameters.AddWithValue("@Descr", (object?)model.Descr ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@LoginName", model.LoginName);
             cmd.Parameters.AddWithValue("@lUserDt", DateTime.Now.Date);
-            cmd.Parameters.AddWithValue("@UserID", model.UserID);
+            cmd.Parameters.AddWithValue("@UserID", userid);
 
             con.Open();
 
@@ -164,10 +164,9 @@ namespace TransportApi.Controllers
             return Ok(new
             {
                 Message = "Sub Route updated successfully",
-                UpdatedBy = model.UserID
+                UpdatedBy = userid
             });
-        }
-        // DELETE
+        } // DELETE
         [HttpDelete("{id}/{userid}")]
         public IActionResult Delete(int id, int userid)
         {
