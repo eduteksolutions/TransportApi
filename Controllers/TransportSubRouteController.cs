@@ -28,6 +28,8 @@ namespace TransportApi.Controllers
         {
             List<object> list = new();
 
+
+
             using SqlConnection con = new SqlConnection(
                 _configuration.GetConnectionString("DefaultConnection"));
 

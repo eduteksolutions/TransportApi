@@ -17,6 +17,40 @@ namespace TransportApi.Controllers
             _configuration = configuration;
         }
 
+        public IActionResult GetAll(int userid)
+        {
+            List<object> list = new();
+
+
+
+            using SqlConnection con = new SqlConnection(
+                _configuration.GetConnectionString("DefaultConnection"));
+
+            SqlCommand cmd = new SqlCommand(
+                "SELECT * FROM edu.TransportRouteMaster  Where UserID=@UserID",
+                con);
+            cmd.Parameters.AddWithValue("@UserID", userid);
+
+            con.Open();
+
+            SqlDataReader dr = cmd.ExecuteReader();
+
+            while (dr.Read())
+            {
+                list.Add(new
+                {
+                    rCd = dr["rCd"],
+                    routeCode = dr["routeCode"],
+                    routeName = dr["routeName"],
+                    description = dr["description"]
+
+                });
+            }
+
+            return Ok(list);
+        }
+
+
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
