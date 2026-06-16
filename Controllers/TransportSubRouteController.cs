@@ -7,9 +7,6 @@ using TransportApi.Models;
 namespace TransportApi.Controllers
 {
 
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Data.SqlClient;
-    using System.Data;
 
     [Route("api/[controller]")]
     [ApiController]
