@@ -48,6 +48,14 @@ namespace TransportApi.Controllers
                 });
             }
 
+            if (list.Count == 0)
+            {
+                return NotFound(new
+                {
+                    message = "No routes found for this user."
+                });
+            }
+
             return Ok(list);
         }
 
