@@ -17,6 +17,7 @@ namespace TransportApi.Controllers
             _configuration = configuration;
         }
 
+        [HttpGet("GetAll")]
         public IActionResult GetAll(int userid)
         {
             List<object> list = new();
