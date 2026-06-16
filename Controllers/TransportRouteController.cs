@@ -102,7 +102,6 @@ namespace TransportApi.Controllers
 
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@rCd", model.rCd);
                 cmd.Parameters.AddWithValue("@routeCode", model.routeCode);
                 cmd.Parameters.AddWithValue("@routeName", model.routeName);
                 cmd.Parameters.AddWithValue("@description",
