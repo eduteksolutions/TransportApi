@@ -24,7 +24,7 @@ namespace TransportApi.Controllers
 
         // GET ALL
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(int userid)
         {
             List<object> list = new();
 
@@ -32,8 +32,9 @@ namespace TransportApi.Controllers
                 _configuration.GetConnectionString("DefaultConnection"));
 
             SqlCommand cmd = new SqlCommand(
-                "SELECT * FROM edu.TransportSubRouteMaster",
+                "SELECT * FROM edu.TransportSubRouteMaster  Where UserID=@UserID",
                 con);
+            cmd.Parameters.AddWithValue("@UserID", userid);
 
             con.Open();
 
@@ -56,17 +57,18 @@ namespace TransportApi.Controllers
         }
 
         // GET BY ID
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        [HttpGet("{id}/{userid}")]
+        public IActionResult GetById(int id, int userid)
         {
             using SqlConnection con = new SqlConnection(
                 _configuration.GetConnectionString("DefaultConnection"));
 
             SqlCommand cmd = new SqlCommand(
-                "SELECT * FROM edu.TransportSubRouteMaster WHERE subRouteCd=@subRouteCd",
+                "SELECT * FROM edu.TransportSubRouteMaster WHERE subRouteCd=@subRouteCd AND UserID=@UserID",
                 con);
 
             cmd.Parameters.AddWithValue("@subRouteCd", id);
+            cmd.Parameters.AddWithValue("@UserID", userid);
 
             con.Open();
 
@@ -85,7 +87,6 @@ namespace TransportApi.Controllers
                 userID = dr["UserID"]
             });
         }
-
         // INSERT
         [HttpPost]
         public IActionResult Insert([FromBody] TransportSubRouteMaster model)
@@ -121,10 +122,12 @@ namespace TransportApi.Controllers
             });
         }
 
-        // UPDATE
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] TransportSubRouteMaster model)
         {
+            if (model == null)
+                return BadRequest("Invalid data");
+
             using SqlConnection con = new SqlConnection(
                 _configuration.GetConnectionString("DefaultConnection"));
 
@@ -144,12 +147,13 @@ namespace TransportApi.Controllers
             cmd.Parameters.AddWithValue("@subRouteCode", model.subRouteCode);
             cmd.Parameters.AddWithValue("@subRouteName", model.subRouteName);
             cmd.Parameters.AddWithValue("@rCd", model.rCd);
-            cmd.Parameters.AddWithValue("@Descr", model.Descr ?? "");
+            cmd.Parameters.AddWithValue("@Descr", (object?)model.Descr ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@LoginName", model.LoginName);
             cmd.Parameters.AddWithValue("@lUserDt", DateTime.Now.Date);
             cmd.Parameters.AddWithValue("@UserID", model.UserID);
 
             con.Open();
+
             int rows = cmd.ExecuteNonQuery();
 
             if (rows == 0)
@@ -157,22 +161,23 @@ namespace TransportApi.Controllers
 
             return Ok(new
             {
-                Message = "Sub Route updated successfully."
+                Message = "Sub Route updated successfully",
+                UpdatedBy = model.UserID
             });
         }
-
         // DELETE
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        [HttpDelete("{id}/{userid}")]
+        public IActionResult Delete(int id, int userid)
         {
             using SqlConnection con = new SqlConnection(
                 _configuration.GetConnectionString("DefaultConnection"));
 
             SqlCommand cmd = new SqlCommand(
-                "DELETE FROM edu.TransportSubRouteMaster WHERE subRouteCd=@subRouteCd",
+                "DELETE FROM edu.TransportSubRouteMaster WHERE subRouteCd=@subRouteCd and UserID=@UserID",
                 con);
 
             cmd.Parameters.AddWithValue("@subRouteCd", id);
+            cmd.Parameters.AddWithValue("@UserID", userid); // optional usage
 
             con.Open();
 
@@ -183,9 +188,11 @@ namespace TransportApi.Controllers
 
             return Ok(new
             {
-                Message = "Sub Route deleted successfully."
+                Message = $"Sub Route deleted successfully by user {userid}"
             });
         }
+
+
     }
 
 
