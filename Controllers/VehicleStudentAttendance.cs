@@ -16,6 +16,7 @@ namespace TransportApi.Controllers
             _configuration = configuration;
         }
 
+        // INSERT / UPDATE
         [HttpPost]
         public IActionResult Save([FromBody] VehicleStudentAttendance model)
         {
@@ -46,14 +47,23 @@ namespace TransportApi.Controllers
                 cmd.Parameters.AddWithValue("@DropTime",
                     (object?)model.DropTime ?? DBNull.Value);
 
-                cmd.Parameters.AddWithValue("@LoginName", model.LoginName);
-                cmd.Parameters.AddWithValue("@lUserDt", DateTime.Now);
-                cmd.Parameters.AddWithValue("@UserID", model.UserID);
+                cmd.Parameters.AddWithValue("@AttendanceStatus",
+                    model.AttendanceStatus);
 
-                SqlParameter tranStatus = new SqlParameter("@Transtatus", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Output
-                };
+                cmd.Parameters.AddWithValue("@LoginName",
+                    model.LoginName);
+
+                cmd.Parameters.AddWithValue("@lUserDt",
+                    DateTime.Now);
+
+                cmd.Parameters.AddWithValue("@UserID",
+                    model.UserID);
+
+                SqlParameter tranStatus = new SqlParameter(
+                    "@Transtatus",
+                    SqlDbType.Int);
+
+                tranStatus.Direction = ParameterDirection.Output;
 
                 cmd.Parameters.Add(tranStatus);
 
@@ -85,6 +95,7 @@ namespace TransportApi.Controllers
             }
         }
 
+        // GET ALL
         [HttpGet("GetAll")]
         public IActionResult GetAll(int userid)
         {
@@ -94,7 +105,10 @@ namespace TransportApi.Controllers
                 _configuration.GetConnectionString("DefaultConnection"));
 
             SqlCommand cmd = new SqlCommand(
-                "SELECT * FROM VehicleStudentAttendance WHERE UserID=@UserID",
+                @"SELECT *
+                  FROM edu.VehicleStudentAttendance
+                  WHERE UserID = @UserID
+                  ORDER BY AttendanceDate DESC",
                 con);
 
             cmd.Parameters.AddWithValue("@UserID", userid);
@@ -113,13 +127,24 @@ namespace TransportApi.Controllers
                     RouteID = dr["RouteID"],
                     AttendanceDate = dr["AttendanceDate"],
                     PickupTime = dr["PickupTime"],
-                    DropTime = dr["DropTime"]
+                    DropTime = dr["DropTime"],
+                    AttendanceStatus = dr["AttendanceStatus"],
+                    UserID = dr["UserID"]
+                });
+            }
+
+            if (list.Count == 0)
+            {
+                return NotFound(new
+                {
+                    Message = "No attendance records found."
                 });
             }
 
             return Ok(list);
         }
 
+        // GET BY ID
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
@@ -127,7 +152,9 @@ namespace TransportApi.Controllers
                 _configuration.GetConnectionString("DefaultConnection"));
 
             SqlCommand cmd = new SqlCommand(
-                "SELECT * FROM VehicleStudentAttendance WHERE AttendanceID=@AttendanceID",
+                @"SELECT *
+                  FROM edu.VehicleStudentAttendance
+                  WHERE AttendanceID = @AttendanceID",
                 con);
 
             cmd.Parameters.AddWithValue("@AttendanceID", id);
@@ -137,7 +164,12 @@ namespace TransportApi.Controllers
             SqlDataReader dr = cmd.ExecuteReader();
 
             if (!dr.Read())
-                return NotFound();
+            {
+                return NotFound(new
+                {
+                    Message = "Attendance record not found."
+                });
+            }
 
             return Ok(new
             {
@@ -147,10 +179,13 @@ namespace TransportApi.Controllers
                 RouteID = dr["RouteID"],
                 AttendanceDate = dr["AttendanceDate"],
                 PickupTime = dr["PickupTime"],
-                DropTime = dr["DropTime"]
+                DropTime = dr["DropTime"],
+                AttendanceStatus = dr["AttendanceStatus"],
+                UserID = dr["UserID"]
             });
         }
 
+        // DELETE
         [HttpDelete("{id}/{userid}")]
         public IActionResult Delete(int id, int userid)
         {
@@ -158,7 +193,9 @@ namespace TransportApi.Controllers
                 _configuration.GetConnectionString("DefaultConnection"));
 
             SqlCommand cmd = new SqlCommand(
-                "DELETE FROM VehicleStudentAttendance WHERE AttendanceID=@AttendanceID AND UserID=@UserID",
+                @"DELETE FROM edu.VehicleStudentAttendance
+                  WHERE AttendanceID = @AttendanceID
+                  AND UserID = @UserID",
                 con);
 
             cmd.Parameters.AddWithValue("@AttendanceID", id);
