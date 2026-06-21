@@ -25,7 +25,7 @@ namespace TransportApi.Controllers
                     _configuration.GetConnectionString("DefaultConnection"));
 
                 SqlCommand cmd = new SqlCommand(
-                    "dbo.ins_VehicleStudentAttendance",
+                    "ins_VehicleStudentAttendance",
                     con);
 
                 cmd.CommandType = CommandType.StoredProcedure;
