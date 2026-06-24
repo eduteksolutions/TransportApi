@@ -21,11 +21,11 @@ namespace TransportApi.Controllers
         // PUT:
         // api/TransportAdmission/UpdateVehicleNo/183/9026/1/HR05AB1234
         // ==================================================
-        [HttpPut("UpdateVehicleNo/{admCd}/{userId}/{teacherCode}/{vehicleNo}")]
+        [HttpPut("UpdateVehicleNo/{admCd}/{userId}/{Code}/{vehicleNo}")]
         public IActionResult UpdateVehicleNo(
             int admCd,
             int userId,
-            int teacherCode,
+            int Code,
             string vehicleNo)
         {
             try
@@ -40,12 +40,12 @@ namespace TransportApi.Controllers
                 SELECT COUNT(*)
                 FROM HRDStaffMasterAccess
                 WHERE UserID = @UserID
-                  AND Code = @TeacherCode
+                  AND Code = @Code
                   AND FormName = 'Transport Vehicle Assignment'
                   AND CanEdit = 'Y'", con);
 
                 rightsCmd.Parameters.AddWithValue("@UserID", userId);
-                rightsCmd.Parameters.AddWithValue("@TeacherCode", teacherCode);
+                rightsCmd.Parameters.AddWithValue("@Code", Code);
 
                 int hasRights = Convert.ToInt32(
                     rightsCmd.ExecuteScalar());
@@ -83,7 +83,7 @@ namespace TransportApi.Controllers
                     Message = "Vehicle number updated successfully.",
                     AdmCd = admCd,
                     UserID = userId,
-                    TeacherCode = teacherCode,
+                    TeacherCode = Code,
                     VehicleNo = vehicleNo
                 });
             }
