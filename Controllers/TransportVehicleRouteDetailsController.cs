@@ -11,13 +11,15 @@ namespace TransportApi.Controllers
     {
         private readonly IConfiguration _configuration;
 
-        public TransportVehicleRouteDetailsController(
-            IConfiguration configuration)
+        public TransportVehicleRouteDetailsController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        // GET: api/TransportVehicleRouteDetails/GetAll?userid=1
+        // ==========================================
+        // GET ALL
+        // GET: api/TransportVehicleRouteDetails/GetAll?userid=9026
+        // ==========================================
         [HttpGet("GetAll")]
         public IActionResult GetAll(int userid)
         {
@@ -32,8 +34,7 @@ namespace TransportApi.Controllers
                     SELECT *
                     FROM VehicleRouteDetails
                     WHERE UserID = @UserID
-                    ORDER BY SerialNo",
-                    con);
+                    ORDER BY SerialNo", con);
 
                 cmd.Parameters.AddWithValue("@UserID", userid);
 
@@ -79,130 +80,13 @@ namespace TransportApi.Controllers
             }
         }
 
-        // GET: api/TransportVehicleRouteDetails/1/1
-        [HttpGet("{id}/{userid}")]
-        public IActionResult GetById(int id, int userid)
-        {
-            try
-            {
-                using SqlConnection con = new SqlConnection(
-                    _configuration.GetConnectionString("DefaultConnection"));
-
-                SqlCommand cmd = new SqlCommand(@"
-                    SELECT *
-                    FROM VehicleRouteDetails
-                    WHERE Id=@Id
-                    AND UserID=@UserID",
-                    con);
-
-                cmd.Parameters.AddWithValue("@Id", id);
-                cmd.Parameters.AddWithValue("@UserID", userid);
-
-                con.Open();
-
-                SqlDataReader dr = cmd.ExecuteReader();
-
-                if (!dr.Read())
-                {
-                    return NotFound(new
-                    {
-                        Message = "Record not found."
-                    });
-                }
-
-                return Ok(new
-                {
-                    Id = dr["Id"],
-                    VehicleCode = dr["VehicleCode"],
-                    SerialNo = dr["SerialNo"],
-                    VehicleNo = dr["VehicleNo"],
-                    RouteCode = dr["RouteCode"],
-                    DriverCode = dr["DriverCode"],
-                    CoDriverCode = dr["CoDriverCode"],
-                    ValidDate = dr["ValidDate"],
-                    MorningTime = dr["MorningTime"],
-                    EveningTime = dr["EveningTime"],
-                    LoginName = dr["LoginName"],
-                    UserID = dr["UserID"]
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    Message = ex.Message
-                });
-            }
-        }
-
-        // POST: api/TransportVehicleRouteDetails
-        [HttpPost]
-        public IActionResult Insert(
-            [FromBody] TransportVehicleRouteDetail model)
-        {
-            try
-            {
-                using SqlConnection con = new SqlConnection(
-                    _configuration.GetConnectionString("DefaultConnection"));
-
-                SqlCommand cmd = new SqlCommand(
-                    "InsertVehicleRouteDetails",
-                    con);
-
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.AddWithValue("@VehicleCode", model.VehicleCode);
-                cmd.Parameters.AddWithValue("@SerialNo", model.SerialNo);
-                cmd.Parameters.AddWithValue("@VehicleNo", model.VehicleNo);
-                cmd.Parameters.AddWithValue("@RouteCode", model.RouteCode);
-                cmd.Parameters.AddWithValue("@DriverCode", model.DriverCode);
-                cmd.Parameters.AddWithValue("@CoDriverCode", model.CoDriverCode);
-                cmd.Parameters.AddWithValue("@ValidDate", model.ValidDate);
-                cmd.Parameters.AddWithValue("@MorningTime", model.MorningTime);
-                cmd.Parameters.AddWithValue("@EveningTime", model.EveningTime);
-                cmd.Parameters.AddWithValue("@LoginName", model.LoginName);
-                cmd.Parameters.AddWithValue("@UserID", model.UserID);
-
-                SqlParameter transStatus =
-                    new SqlParameter("@TransStatus", SqlDbType.Int);
-
-                transStatus.Direction = ParameterDirection.Output;
-
-                cmd.Parameters.Add(transStatus);
-
-                con.Open();
-
-                cmd.ExecuteNonQuery();
-
-                int result =
-                    Convert.ToInt32(transStatus.Value);
-
-                if (result == 2)
-                {
-                    return BadRequest(new
-                    {
-                        Message = "Duplicate Record."
-                    });
-                }
-
-                return Ok(new
-                {
-                    Message = "Record saved successfully."
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    Message = ex.Message
-                });
-            }
-        }
-
-        // PUT: api/TransportVehicleRouteDetails/1/1
-        [HttpPut("{id}/{userid}")]
+        // ==========================================
+        // UPDATE
+        // PUT: api/TransportVehicleRouteDetails/4/9026
+        // ==========================================
+        [HttpPut("{vehicleCode}/{userid}")]
         public IActionResult Update(
-            int id,
+            int vehicleCode,
             int userid,
             [FromBody] TransportVehicleRouteDetail model)
         {
@@ -214,24 +98,21 @@ namespace TransportApi.Controllers
                 SqlCommand cmd = new SqlCommand(@"
                     UPDATE VehicleRouteDetails
                     SET
-                        VehicleCode=@VehicleCode,
-                        SerialNo=@SerialNo,
-                        VehicleNo=@VehicleNo,
-                        RouteCode=@RouteCode,
-                        DriverCode=@DriverCode,
-                        CoDriverCode=@CoDriverCode,
-                        ValidDate=@ValidDate,
-                        MorningTime=@MorningTime,
-                        EveningTime=@EveningTime,
-                        LoginName=@LoginName
-                    WHERE Id=@Id
-                    AND UserID=@UserID",
-                    con);
+                        SerialNo = @SerialNo,
+                        VehicleNo = @VehicleNo,
+                        RouteCode = @RouteCode,
+                        DriverCode = @DriverCode,
+                        CoDriverCode = @CoDriverCode,
+                        ValidDate = @ValidDate,
+                        MorningTime = @MorningTime,
+                        EveningTime = @EveningTime,
+                        LoginName = @LoginName
+                    WHERE VehicleCode = @VehicleCode
+                    AND UserID = @UserID", con);
 
-                cmd.Parameters.AddWithValue("@Id", id);
+                cmd.Parameters.AddWithValue("@VehicleCode", vehicleCode);
                 cmd.Parameters.AddWithValue("@UserID", userid);
 
-                cmd.Parameters.AddWithValue("@VehicleCode", model.VehicleCode);
                 cmd.Parameters.AddWithValue("@SerialNo", model.SerialNo);
                 cmd.Parameters.AddWithValue("@VehicleNo", model.VehicleNo);
                 cmd.Parameters.AddWithValue("@RouteCode", model.RouteCode);
@@ -268,10 +149,13 @@ namespace TransportApi.Controllers
             }
         }
 
-        // DELETE: api/TransportVehicleRouteDetails/1/1
-        [HttpDelete("{id}/{userid}")]
+        // ==========================================
+        // DELETE
+        // DELETE: api/TransportVehicleRouteDetails/4/9026
+        // ==========================================
+        [HttpDelete("{vehicleCode}/{userid}")]
         public IActionResult Delete(
-            int id,
+            int vehicleCode,
             int userid)
         {
             try
@@ -281,11 +165,10 @@ namespace TransportApi.Controllers
 
                 SqlCommand cmd = new SqlCommand(@"
                     DELETE FROM VehicleRouteDetails
-                    WHERE Id=@Id
-                    AND UserID=@UserID",
-                    con);
+                    WHERE VehicleCode = @VehicleCode
+                    AND UserID = @UserID", con);
 
-                cmd.Parameters.AddWithValue("@Id", id);
+                cmd.Parameters.AddWithValue("@VehicleCode", vehicleCode);
                 cmd.Parameters.AddWithValue("@UserID", userid);
 
                 con.Open();

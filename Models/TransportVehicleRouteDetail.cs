@@ -2,8 +2,6 @@
 {
     public class TransportVehicleRouteDetail
     {
-        public int Id { get; set; }
-
         public int VehicleCode { get; set; }
 
         public int SerialNo { get; set; }
