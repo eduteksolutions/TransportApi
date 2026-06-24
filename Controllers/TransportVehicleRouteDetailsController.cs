@@ -90,7 +90,7 @@ namespace TransportApi.Controllers
 
                 SqlCommand cmd = new SqlCommand(@"
                     SELECT *
-                    FROM TransportVehicleRouteDetails
+                    FROM VehicleRouteDetails
                     WHERE Id=@Id
                     AND UserID=@UserID",
                     con);
@@ -212,7 +212,7 @@ namespace TransportApi.Controllers
                     _configuration.GetConnectionString("DefaultConnection"));
 
                 SqlCommand cmd = new SqlCommand(@"
-                    UPDATE TransportVehicleRouteDetails
+                    UPDATE VehicleRouteDetails
                     SET
                         VehicleCode=@VehicleCode,
                         SerialNo=@SerialNo,
@@ -280,7 +280,7 @@ namespace TransportApi.Controllers
                     _configuration.GetConnectionString("DefaultConnection"));
 
                 SqlCommand cmd = new SqlCommand(@"
-                    DELETE FROM TransportVehicleRouteDetails
+                    DELETE FROM VehicleRouteDetails
                     WHERE Id=@Id
                     AND UserID=@UserID",
                     con);
