@@ -45,7 +45,6 @@ namespace TransportApi.Controllers
                 {
                     list.Add(new
                     {
-                        Id = dr["Id"],
                         VehicleCode = dr["VehicleCode"],
                         SerialNo = dr["SerialNo"],
                         VehicleNo = dr["VehicleNo"],
@@ -56,6 +55,7 @@ namespace TransportApi.Controllers
                         MorningTime = dr["MorningTime"],
                         EveningTime = dr["EveningTime"],
                         LoginName = dr["LoginName"],
+                        LoggedDate = dr["LoggedDate"],
                         UserID = dr["UserID"]
                     });
                 }
