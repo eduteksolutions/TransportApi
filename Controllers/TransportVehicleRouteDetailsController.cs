@@ -30,7 +30,7 @@ namespace TransportApi.Controllers
 
                 SqlCommand cmd = new SqlCommand(@"
                     SELECT *
-                    FROM TransportVehicleRouteDetails
+                    FROM VehicleRouteDetails
                     WHERE UserID = @UserID
                     ORDER BY SerialNo",
                     con);
