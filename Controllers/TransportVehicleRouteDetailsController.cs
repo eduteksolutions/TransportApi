@@ -15,7 +15,65 @@ namespace TransportApi.Controllers
         {
             _configuration = configuration;
         }
+        // ======================================================
+        // GET BY USERID + VEHICLE CODE
+        // GET: api/TransportVehicleRouteDetails/GetByVehicleCode?userid=9026&vehicleCode=1
+        // ======================================================
+        [HttpGet("GetByVehicleCode")]
+        public IActionResult GetByVehicleCode(int userid, int vehicleCode)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(
+                    _configuration.GetConnectionString("DefaultConnection"));
 
+                SqlCommand cmd = new SqlCommand(@"
+            SELECT *
+            FROM VehicleRouteDetails
+            WHERE UserID = @UserID
+              AND VehicleCode = @VehicleCode", con);
+
+                cmd.Parameters.AddWithValue("@UserID", userid);
+                cmd.Parameters.AddWithValue("@VehicleCode", vehicleCode);
+
+                con.Open();
+
+                SqlDataReader dr = cmd.ExecuteReader();
+
+                if (!dr.Read())
+                {
+                    return NotFound(new
+                    {
+                        Message = "Vehicle record not found."
+                    });
+                }
+
+                var result = new
+                {
+                    VehicleCode = dr["VehicleCode"],
+                    SerialNo = dr["SerialNo"],
+                    VehicleNo = dr["VehicleNo"],
+                    RouteCode = dr["RouteCode"],
+                    DriverCode = dr["DriverCode"],
+                    CoDriverCode = dr["CoDriverCode"],
+                    ValidDate = dr["ValidDate"],
+                    MorningTime = dr["MorningTime"],
+                    EveningTime = dr["EveningTime"],
+                    LoginName = dr["LoginName"],
+                    LoggedDate = dr["LoggedDate"],
+                    UserID = dr["UserID"]
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = ex.Message
+                });
+            }
+        }
         // ==========================================
         // GET ALL
         // GET: api/TransportVehicleRouteDetails/GetAll?userid=9026
