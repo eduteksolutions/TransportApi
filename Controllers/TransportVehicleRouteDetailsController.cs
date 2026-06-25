@@ -206,6 +206,69 @@ namespace TransportApi.Controllers
                 });
             }
         }
+        // POST: api/TransportVehicleRouteDetails
+        [HttpPost]
+        public IActionResult Insert(
+            [FromBody] TransportVehicleRouteDetail model)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(
+                    _configuration.GetConnectionString("DefaultConnection"));
+
+                SqlCommand cmd = new SqlCommand(
+                    "InsertVehicleRouteDetails",
+                    con);
+
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@VehicleCode", model.VehicleCode);
+                cmd.Parameters.AddWithValue("@SerialNo", model.SerialNo);
+                cmd.Parameters.AddWithValue("@VehicleNo", model.VehicleNo);
+                cmd.Parameters.AddWithValue("@RouteCode", model.RouteCode);
+                cmd.Parameters.AddWithValue("@DriverCode", model.DriverCode);
+                cmd.Parameters.AddWithValue("@CoDriverCode", model.CoDriverCode);
+                cmd.Parameters.AddWithValue("@ValidDate", model.ValidDate);
+                cmd.Parameters.AddWithValue("@MorningTime", model.MorningTime);
+                cmd.Parameters.AddWithValue("@EveningTime", model.EveningTime);
+                cmd.Parameters.AddWithValue("@LoginName", model.LoginName);
+                cmd.Parameters.AddWithValue("@UserID", model.UserID);
+
+                SqlParameter transStatus =
+                    new SqlParameter("@TransStatus", SqlDbType.Int);
+
+                transStatus.Direction = ParameterDirection.Output;
+
+                cmd.Parameters.Add(transStatus);
+
+                con.Open();
+
+                cmd.ExecuteNonQuery();
+
+                int result =
+                    Convert.ToInt32(transStatus.Value);
+
+                if (result == 2)
+                {
+                    return BadRequest(new
+                    {
+                        Message = "Duplicate Record."
+                    });
+                }
+
+                return Ok(new
+                {
+                    Message = "Record saved successfully."
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = ex.Message
+                });
+            }
+        }
 
         // ==========================================
         // DELETE
