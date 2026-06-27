@@ -153,6 +153,8 @@ namespace TransportApi.Controllers
                 cmd.Parameters.AddWithValue("@picPath", model.picPath);
                 cmd.Parameters.AddWithValue("@LoginName", model.LoginName);
                 cmd.Parameters.AddWithValue("@UserID", model.UserID);
+                cmd.Parameters.AddWithValue("@DeviceID", model.DeviceID);
+
 
                 SqlParameter transStatus =
                     new SqlParameter("@TransStatus", SqlDbType.Int);
