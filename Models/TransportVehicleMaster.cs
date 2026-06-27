@@ -22,6 +22,6 @@
         public string LoginName { get; set; }
         public int UserID { get; set; }
 
-        public int DeviceID { get; set; }
+        public string DeviceID { get; set; }
     }
 }
