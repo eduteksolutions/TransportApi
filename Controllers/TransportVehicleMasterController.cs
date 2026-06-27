@@ -16,7 +16,7 @@ namespace TransportApi.Controllers
             _configuration = configuration;
         }
 
-        // GET: api/TransportVehicle/GetAll?userid=1
+        // GET: api/TransportVehicleMasterGetAll?userid=1
         [HttpGet("GetAll")]
         public IActionResult GetAll(int userid)
         {
@@ -56,7 +56,8 @@ namespace TransportApi.Controllers
                     Add2 = dr["Add2"],
                     Add3 = dr["Add3"],
                     vDescr = dr["vDescr"],
-                    picPath = dr["picPath"]
+                    picPath = dr["picPath"],
+                    DeviceID= dr["DeviceID"]
                 });
             }
 
@@ -117,7 +118,8 @@ namespace TransportApi.Controllers
                 vDescr = dr["vDescr"],
                 picPath = dr["picPath"],
                 LoginName = dr["LoginName"],
-                UserID = dr["UserID"]
+                UserID = dr["UserID"],
+                DeviceID = dr["DeviceID"]
             });
         }
 
