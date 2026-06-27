@@ -25,7 +25,6 @@ namespace TransportApi.Controllers
         public IActionResult UpdateVehicleNo(
             int admCd,
             int userId,
-
             int Code,
             string vehicleNo)
         {
@@ -61,9 +60,10 @@ namespace TransportApi.Controllers
 
                 SqlCommand cmd = new SqlCommand(@"
                 UPDATE Admission
-                SET VehicleNo = @VehicleNo
+                SET VehicleNo = @VehicleNo,trans='Y'
                 WHERE AdmCd = @AdmCd
                   AND UserID = @UserID", con);
+
 
                 cmd.Parameters.AddWithValue("@VehicleNo", vehicleNo);
                 cmd.Parameters.AddWithValue("@AdmCd", admCd);
@@ -98,12 +98,18 @@ namespace TransportApi.Controllers
         }
 
 
-        // ==================================================
+        
+        
+        
+        
+        // =======================a===========================
         // GET STUDENTS BY VEHICLE NUMBER
         // GET:
         // api/TransportAdmission/GetTransportStudentsByVehicle
         // ?userId=9026&teacherCode=1&vehicleNo=HR05AB1234
         // ==================================================
+        
+        
         [HttpGet("GetTransportStudentsByVehicle")]
         public IActionResult GetTransportStudentsByVehicle(
             int userId,

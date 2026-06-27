@@ -71,7 +71,7 @@ namespace TransportApi.Controllers
             return Ok(list);
         }
 
-        // GET: api/TransportVehicle/1/101
+        // GET: api/TransportVehicleMaster/1/101
         [HttpGet("{id}/{userid}")]
         public IActionResult GetById(int id, int userid)
         {
@@ -188,7 +188,7 @@ namespace TransportApi.Controllers
             }
         }
 
-        // PUT: api/TransportVehicle/1/101
+        // PUT: api/TransportVehicleMaster/1/101
         [HttpPut("{id}/{userid}")]
         public IActionResult Update(
             int id,
@@ -217,7 +217,7 @@ namespace TransportApi.Controllers
                     vDescr = @vDescr,
                     picPath = @picPath,
                     LoginName = @LoginName,
-                    lUserDt = @lUserDt
+                    lUserDt = @lUserDt,DeviceID=@DeviceID
                 WHERE vCd = @vCd
                   AND UserID = @UserID",
                 con);
@@ -242,6 +242,8 @@ namespace TransportApi.Controllers
             cmd.Parameters.AddWithValue("@picPath", model.picPath);
             cmd.Parameters.AddWithValue("@LoginName", model.LoginName);
             cmd.Parameters.AddWithValue("@lUserDt", DateTime.Now.Date);
+            cmd.Parameters.AddWithValue("@DeviceID", model.DeviceID);
+
 
             con.Open();
 
