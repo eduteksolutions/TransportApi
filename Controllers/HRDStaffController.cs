@@ -51,9 +51,9 @@ namespace TransportApi.Controllers
             return Ok(list);
         }
 
-        // GET: api/HRDStaff/GetVehiclesByDriver?driverCode=38
+        // GET: api/HRDStaff/GetVehiclesByDriver?HRDCode=38
         [HttpGet("GetVehiclesByDriver")]
-        public IActionResult GetVehiclesByDriver(string HRDCode)
+        public IActionResult GetVehiclesByDriver(string HRDCode,int UserID)
         {
             List<object> list = new();
 
@@ -65,11 +65,12 @@ namespace TransportApi.Controllers
             VehicleCode,
             VehicleNo
         FROM VehicleRouteDetails
-        WHERE HRDCode = @DriverCode
-           OR CoDriverCode = @DriverCode
+        WHERE DriverCode = @HRDCode
+           OR CoDriverCode = @HRDCode and UserID=@UserID 
         ORDER BY VehicleNo", con);
 
             cmd.Parameters.AddWithValue("@HRDCode", HRDCode);
+            cmd.Parameters.AddWithValue("@UserID", UserID);
 
             con.Open();
 
