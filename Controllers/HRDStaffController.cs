@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+
 
 namespace TransportApi.Controllers
 {
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Data.SqlClient;
-
+  
     [ApiController]
     [Route("api/[controller]")]
     public class HRDStaffController : ControllerBase
@@ -45,6 +45,42 @@ namespace TransportApi.Controllers
                 {
                     Code = dr["Code"],
                     Name = dr["SName"]
+                });
+            }
+
+            return Ok(list);
+        }
+
+        // GET: api/HRDStaff/GetVehiclesByDriver?driverCode=38
+        [HttpGet("GetVehiclesByDriver")]
+        public IActionResult GetVehiclesByDriver(string HRDCode)
+        {
+            List<object> list = new();
+
+            using SqlConnection con = new SqlConnection(
+                _configuration.GetConnectionString("DefaultConnection"));
+
+            SqlCommand cmd = new SqlCommand(@"
+        SELECT DISTINCT
+            VehicleCode,
+            VehicleNo
+        FROM VehicleRouteDetails
+        WHERE HRDCode = @DriverCode
+           OR CoDriverCode = @DriverCode
+        ORDER BY VehicleNo", con);
+
+            cmd.Parameters.AddWithValue("@HRDCode", HRDCode);
+
+            con.Open();
+
+            SqlDataReader dr = cmd.ExecuteReader();
+
+            while (dr.Read())
+            {
+                list.Add(new
+                {
+                    VehicleCode = dr["VehicleCode"],
+                    VehicleNo = dr["VehicleNo"]
                 });
             }
 
