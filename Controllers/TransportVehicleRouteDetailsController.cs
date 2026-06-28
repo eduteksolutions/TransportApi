@@ -223,7 +223,6 @@ namespace TransportApi.Controllers
                 cmd.CommandType = CommandType.StoredProcedure;
 
                 cmd.Parameters.AddWithValue("@VehicleCode", model.VehicleCode);
-                cmd.Parameters.AddWithValue("@SerialNo", model.SerialNo);
                 cmd.Parameters.AddWithValue("@VehicleNo", model.VehicleNo);
                 cmd.Parameters.AddWithValue("@RouteCode", model.RouteCode);
                 cmd.Parameters.AddWithValue("@DriverCode", model.DriverCode);
