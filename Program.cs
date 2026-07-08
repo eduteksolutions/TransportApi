@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.SignalR;
 using TransportApi;
 using static System.Net.WebRequestMethods;
 using TransportApi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,11 +19,31 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
+builder.Services.AddAuthorization();
+
+
 builder.Services.AddHttpClient();
 // ================= GPS SERVICES =================
 builder.Services.AddScoped<GpsService>();
 builder.Services.AddHostedService<GpsBackgroundService>();
-
+builder.Services.AddScoped<SmsService>();
 
 builder.Services.AddSignalR();
 
@@ -62,3 +84,4 @@ app.MapControllers();
 app.MapHub<DataHub>("/dataHub");
 
 app.Run();
+
