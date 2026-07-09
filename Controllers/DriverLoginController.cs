@@ -57,40 +57,40 @@ namespace TransportApi.Controllers
 
                     if (dr.Read())
                     {
-                        return Ok(new
-                        {
-                            code = "200",
-                            status = true,
-                            message = "Login Successful",
+                    return Ok(new
+                    {
+                        code = "200",
+                        status = true,
+                        message = "Login Successful",
 
-                            Faculty_Cd = dr["Faculty_Cd"],
-                            Faculty_Name = dr["Faculty_Name"],
-                            Mobile = dr["Mobile"],
-                            pic = dr["pic"],
-                            DOB = dr["DOB"],
-                            Qualification = dr["Qualification"],
-                            Address = dr["Address"],
-                            ClassIncharge = dr["ClassIncharge"],
-                            UserID = dr["UserID"],
-                            InChargeClassCd = dr["InChargeClassCd"],
-                            InChargeSecCd = dr["InChargeSecCd"],
-                            instituteName = dr["instituteName"],
-                            institueLogo = dr["institueLogo"],
-                            InstituteAddress = dr["InstituteAddress"],
-                            InstitutePhone = dr["InstitutePhone"],
-                            InstituteState = dr["InstituteState"],
-                            InstituteCountry = dr["InstituteCountry"],
-                            InstituteAbout = dr["InstituteAbout"],
-                            WebSiteLinks = dr["WebSiteLinks"],
-                            Logo = dr["Logo"]
-                        });
-                    }
+                        Faculty_Cd = dr["code"],
+                        Faculty_Name = dr["sName"],
+                        Mobile = dr["Phone"],
+                        pic = dr["Pic"],
+                        DOB = dr["birthDate"],
+                        Qualification = dr["Qualification"],
+                        Address = dr["Address"],
+                        UserID = dr["UserID"],
+
+                        Designation = dr["Designation"],
+                        NickName = dr["nickName"],
+                        FatherName = dr["f_hname"],
+                        Gender = dr["Sex"],
+                        DepartmentId = dr["departmentid"],
+                        RoleId = dr["roleid"],
+                        EmailID = dr["EmailID"],
+                        DeviceToken = dr["DeviceToken"],
+                        DeviceType = dr["DeviceType"],
+                        IsActive = dr["isActive"]
+                    });
+                }
 
                     return Ok(new
                     {
                         code = "401",
                         status = false,
                         message = "Invalid Faculty Code or User ID",
+
 
                         Faculty_Cd = "",
                         Faculty_Name = "",
@@ -99,19 +99,17 @@ namespace TransportApi.Controllers
                         DOB = "",
                         Qualification = "",
                         Address = "",
-                        ClassIncharge = "",
                         UserID = "",
-                        InChargeClassCd = "",
-                        InChargeSecCd = "",
-                        instituteName = "",
-                        institueLogo = "",
-                        InstituteAddress = "",
-                        InstitutePhone = "",
-                        InstituteState = "",
-                        InstituteCountry = "",
-                        InstituteAbout = "",
-                        WebSiteLinks = "",
-                        Logo = ""
+                        Designation = "",
+                        NickName = "",
+                        FatherName = "",
+                        Gender = "",
+                        DepartmentId = 0,
+                        RoleId = 0,
+                        EmailID = "",
+                        DeviceToken = "",
+                        DeviceType = "",
+                        IsActive = false
                     });
                 }
                 catch (Exception ex)
@@ -125,5 +123,7 @@ namespace TransportApi.Controllers
                 }
             }
         }
-    }
+    
+
+}
 
