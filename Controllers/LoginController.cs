@@ -2,7 +2,6 @@
 using Microsoft.Data.SqlClient;
 using TransportApi.Models;
 using TransportApi.Services;
-using Twilio.Http;
 
 namespace TransportApi.Controllers
 {

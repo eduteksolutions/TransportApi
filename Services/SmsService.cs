@@ -1,6 +1,4 @@
-﻿using Twilio.Types;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
+﻿
 using System.Net.Http;
 
 namespace TransportApi.Services
@@ -18,17 +16,7 @@ namespace TransportApi.Services
 
         public async Task SendSmsAsyncTwilop(string toPhoneNumber, string message)
         {
-            var accountSid = _configuration["Twilio:AccountSid"];
-            var authToken = _configuration["Twilio:AuthToken"];
-            var fromPhoneNumber = _configuration["Twilio:FromPhoneNumber"];
-
-            TwilioClient.Init(accountSid, authToken);
-
-            await MessageResource.CreateAsync(
-                body: message,
-                from: new PhoneNumber(fromPhoneNumber),
-                to: new PhoneNumber(toPhoneNumber)
-            );
+           
         }
 
         public async Task SendSmsAsync(string toPhoneNumber, string message)
