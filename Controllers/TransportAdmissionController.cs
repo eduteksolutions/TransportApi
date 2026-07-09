@@ -21,12 +21,12 @@ namespace TransportApi.Controllers
         // PUT:
         // api/TransportAdmission/UpdateVehicleNo/183/9026/1/HR05AB1234
         // ==================================================
-        [HttpPut("UpdateVehicleNo/{admCd}/{userId}/{Code}/{vehicleNo}")]
-        public IActionResult UpdateVehicleNo(
-            int admCd,
+        [HttpPut("UpdateStation/{admCd}/{userId}/{Code}/{PickupStationCd}/{DropStationCd}")]
+        public IActionResult UpdateStation(
+            int admCd, 
             int userId,
             int Code,
-            string vehicleNo)
+            int PickupStationCd,int DropStationCd)
         {
             try
             {
@@ -60,12 +60,15 @@ namespace TransportApi.Controllers
 
                 SqlCommand cmd = new SqlCommand(@"
                 UPDATE Admission
-                SET VehicleNo = @VehicleNo,trans='Y'
+                SET PickupStationCd = @PickupStationCd,trans='Y',DropStationCd=@DropStationCd
                 WHERE AdmCd = @AdmCd
                   AND UserID = @UserID", con);
 
 
-                cmd.Parameters.AddWithValue("@VehicleNo", vehicleNo);
+                cmd.Parameters.AddWithValue("@PickupStationCd", @PickupStationCd);
+                cmd.Parameters.AddWithValue("@DropStationCd", @DropStationCd);
+
+
                 cmd.Parameters.AddWithValue("@AdmCd", admCd);
                 cmd.Parameters.AddWithValue("@UserID", userId);
 
@@ -81,11 +84,16 @@ namespace TransportApi.Controllers
 
                 return Ok(new
                 {
-                    Message = "Vehicle number updated successfully.",
+                    
+
+
+                    Status = true,
+                    Message = "Station updated successfully.",
                     AdmCd = admCd,
                     UserID = userId,
                     TeacherCode = Code,
-                    VehicleNo = vehicleNo
+                    PickupStationCd = PickupStationCd,
+                    DropStationCd = DropStationCd
                 });
             }
             catch (Exception ex)
