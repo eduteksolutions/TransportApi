@@ -96,6 +96,67 @@ namespace TransportApi.Controllers
                 });
             }
         }
+
+        [HttpGet("GetBySubStation/{subRtCd}/{userid}")]
+        public IActionResult GetBySubStation(string subRtCd, int userid)
+        {
+            List<object> list = new();
+
+            try
+            {
+                using SqlConnection con = new SqlConnection(
+                    _configuration.GetConnectionString("DefaultConnection"));
+
+                // Filters by both the Sub-Station/Sub-Route code and the User ID
+                SqlCommand cmd = new SqlCommand(
+                    "SELECT * FROM TransportStationMaster WHERE SubRtCd = @SubRtCd AND UserID = @UserID",
+                    con);
+
+                cmd.Parameters.AddWithValue("@SubRtCd", subRtCd);
+                cmd.Parameters.AddWithValue("@UserID", userid);
+
+                con.Open();
+
+                using SqlDataReader dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    list.Add(new
+                    {
+                        StCode = dr["StCode"],
+                        StName = dr["StName"],
+                        SubRtCd = dr["SubRtCd"],
+                        Latitude = dr["Latitude"],
+                        Longitude = dr["Longitude"],
+                        ArrivalTime = dr["ArrivalTime"],
+                        DepartureTime = dr["DepartureTime"],
+                        startLat = dr["startLat"],
+                        startLng = dr["startLng"],
+                        endLat = dr["endLat"],
+                        endLng = dr["endLng"],
+                        UserID = dr["UserID"]
+                    });
+                }
+
+                if (list.Count == 0)
+                {
+                    return NotFound(new
+                    {
+                        Message = $"No stations found for Sub-Station: {subRtCd} under this user."
+                    });
+                }
+
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Status = -1,
+                    Message = ex.Message
+                });
+            }
+        }
         [HttpPost]
             public IActionResult Save([FromBody] TransportStationMaster model)
             {
