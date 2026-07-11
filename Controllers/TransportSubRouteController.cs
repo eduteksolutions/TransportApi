@@ -103,7 +103,6 @@ namespace TransportApi.Controllers
             cmd.Parameters.AddWithValue("@rCd", model.rCd);
             cmd.Parameters.AddWithValue("@Descr", model.Descr ?? "");
             cmd.Parameters.AddWithValue("@LoginName", model.LoginName);
-            cmd.Parameters.AddWithValue("@lUserDt", DateTime.Now.Date);
             cmd.Parameters.AddWithValue("@UserID", model.UserID);
 
             DataTable dt = new();
