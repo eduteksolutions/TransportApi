@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using TransportApi.Models;
 
 namespace TransportApi.Controllers
 {
@@ -21,23 +22,24 @@ namespace TransportApi.Controllers
         // PUT:
         // api/TransportAdmission/UpdateVehicleNo/183/9026/1/HR05AB1234
         // ==================================================
+       
+
         [HttpPut("UpdateStations")]
-        public IActionResult UpdateStations(int userId, string Code, int admCd, int PickupStationCd, int DropStationCd)
+        public IActionResult UpdateStations([FromBody] UpdateStationRequest model)
         {
             try
             {
                 using SqlConnection con = new SqlConnection(
                     _configuration.GetConnectionString("DefaultConnection"));
 
-                using SqlCommand cmd = new SqlCommand("dbo.sp_UpdateTransportAdmissionStations", con);
+                using SqlCommand cmd = new SqlCommand("edu.sp_UpdateTransportAdmissionStations", con);
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                // Add parameters
-                cmd.Parameters.AddWithValue("@UserID", userId);
-                cmd.Parameters.AddWithValue("@Code", Code);
-                cmd.Parameters.AddWithValue("@AdmCd", admCd);
-                cmd.Parameters.AddWithValue("@PickupStationCd", PickupStationCd);
-                cmd.Parameters.AddWithValue("@DropStationCd", DropStationCd);
+                cmd.Parameters.AddWithValue("@UserID", model.UserId);
+                cmd.Parameters.AddWithValue("@Code", model.Code);
+                cmd.Parameters.AddWithValue("@AdmCd", model.AdmCd);
+                cmd.Parameters.AddWithValue("@PickupStationCd", model.PickupStationCd);
+                cmd.Parameters.AddWithValue("@DropStationCd", model.DropStationCd);
 
                 con.Open();
 
@@ -48,28 +50,16 @@ namespace TransportApi.Controllers
                     int status = Convert.ToInt32(reader["Status"]);
                     string message = reader["Message"].ToString();
 
-                    // Handle Unauthorized status (-1)
                     if (status == -1)
-                    {
                         return Unauthorized(new { Message = message });
-                    }
 
-                    // Handle Not Found status (0)
                     if (status == 0)
-                    {
                         return NotFound(new { Message = message });
-                    }
 
-                    // Success (1)
                     return Ok(new
                     {
                         Status = true,
-                        Message = message,
-                        AdmCd = admCd,
-                        UserID = userId,
-                        TeacherCode = Code,
-                        PickupStationCd = PickupStationCd,
-                        DropStationCd = DropStationCd
+                        Message = message
                     });
                 }
 
@@ -80,9 +70,6 @@ namespace TransportApi.Controllers
                 return StatusCode(500, new { Message = ex.Message });
             }
         }
-
-
-
 
 
         // =======================a===========================
