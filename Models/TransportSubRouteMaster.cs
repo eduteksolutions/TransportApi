@@ -9,6 +9,6 @@
         public string Descr { get; set; }
         public string LoginName { get; set; }
         public DateTime lUserDt { get; set; }
-        public string UserID { get; set; }
+        public int UserID { get; set; }
     }
 }
