@@ -99,7 +99,6 @@ namespace TransportApi.Controllers
 
             cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddWithValue("@subRouteCode", model.subRouteCode);
             cmd.Parameters.AddWithValue("@subRouteName", model.subRouteName);
             cmd.Parameters.AddWithValue("@rCd", model.rCd);
             cmd.Parameters.AddWithValue("@Descr", model.Descr ?? "");

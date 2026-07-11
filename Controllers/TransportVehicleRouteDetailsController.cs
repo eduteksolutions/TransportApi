@@ -142,6 +142,14 @@ namespace TransportApi.Controllers
         // UPDATE
         // PUT: api/TransportVehicleRouteDetails/4/9026
         // ==========================================
+        /// <summary>
+        ///  Use  RouteCode  fro subroute code
+        ///  
+        /// </summary>
+        /// <param name="vehicleCode"></param>
+        /// <param name="userid"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPut("{vehicleCode}/{userid}")]
         public IActionResult Update(
             int vehicleCode,
