@@ -21,103 +21,78 @@ namespace TransportApi.Controllers
         // PUT:
         // api/TransportAdmission/UpdateVehicleNo/183/9026/1/HR05AB1234
         // ==================================================
-        [HttpPut("UpdateStation/{admCd}/{userId}/{Code}/{PickupStationCd}/{DropStationCd}")]
-        public IActionResult UpdateStation(
-            int admCd, 
-            int userId,
-            int Code,
-            int PickupStationCd,int DropStationCd)
+        [HttpPut("UpdateStations")]
+        public IActionResult UpdateStations(int userId, string Code, int admCd, int PickupStationCd, int DropStationCd)
         {
             try
             {
                 using SqlConnection con = new SqlConnection(
                     _configuration.GetConnectionString("DefaultConnection"));
 
+                using SqlCommand cmd = new SqlCommand("dbo.sp_UpdateTransportAdmissionStations", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters
+                cmd.Parameters.AddWithValue("@UserID", userId);
+                cmd.Parameters.AddWithValue("@Code", Code);
+                cmd.Parameters.AddWithValue("@AdmCd", admCd);
+                cmd.Parameters.AddWithValue("@PickupStationCd", PickupStationCd);
+                cmd.Parameters.AddWithValue("@DropStationCd", DropStationCd);
+
                 con.Open();
 
-                // Check Edit Rights
-                SqlCommand rightsCmd = new SqlCommand(@"
-                SELECT COUNT(*)
-                FROM HRDStaffMasterAccess
-                WHERE UserID = @UserID
-                  AND Code = @Code
-                  AND FormName = 'Transport Vehicle Assignment'
-                  AND CanEdit = 'Y'", con);
+                using SqlDataReader reader = cmd.ExecuteReader();
 
-                rightsCmd.Parameters.AddWithValue("@UserID", userId);
-                rightsCmd.Parameters.AddWithValue("@Code", Code);
-
-                int hasRights = Convert.ToInt32(
-                    rightsCmd.ExecuteScalar());
-
-                if (hasRights == 0)
+                if (reader.Read())
                 {
-                    return Unauthorized(new
+                    int status = Convert.ToInt32(reader["Status"]);
+                    string message = reader["Message"].ToString();
+
+                    // Handle Unauthorized status (-1)
+                    if (status == -1)
                     {
-                        Message = "You do not have permission to update vehicle number."
+                        return Unauthorized(new { Message = message });
+                    }
+
+                    // Handle Not Found status (0)
+                    if (status == 0)
+                    {
+                        return NotFound(new { Message = message });
+                    }
+
+                    // Success (1)
+                    return Ok(new
+                    {
+                        Status = true,
+                        Message = message,
+                        AdmCd = admCd,
+                        UserID = userId,
+                        TeacherCode = Code,
+                        PickupStationCd = PickupStationCd,
+                        DropStationCd = DropStationCd
                     });
                 }
 
-                SqlCommand cmd = new SqlCommand(@"
-                UPDATE Admission
-                SET PickupStationCd = @PickupStationCd,trans='Y',DropStationCd=@DropStationCd
-                WHERE AdmCd = @AdmCd
-                  AND UserID = @UserID", con);
-
-
-                cmd.Parameters.AddWithValue("@PickupStationCd", @PickupStationCd);
-                cmd.Parameters.AddWithValue("@DropStationCd", @DropStationCd);
-
-
-                cmd.Parameters.AddWithValue("@AdmCd", admCd);
-                cmd.Parameters.AddWithValue("@UserID", userId);
-
-                int rows = cmd.ExecuteNonQuery();
-
-                if (rows == 0)
-                {
-                    return NotFound(new
-                    {
-                        Message = "Admission record not found."
-                    });
-                }
-
-                return Ok(new
-                {
-                    
-
-
-                    Status = true,
-                    Message = "Station updated successfully.",
-                    AdmCd = admCd,
-                    UserID = userId,
-                    TeacherCode = Code,
-                    PickupStationCd = PickupStationCd,
-                    DropStationCd = DropStationCd
-                });
+                return StatusCode(500, new { Message = "Unexpected database response." });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    Message = ex.Message
-                });
+                return StatusCode(500, new { Message = ex.Message });
             }
         }
 
 
-        
-        
-        
-        
+
+
+
         // =======================a===========================
         // GET STUDENTS BY VEHICLE NUMBER
         // GET:
         // api/TransportAdmission/GetTransportStudentsByVehicle
         // ?userId=9026&teacherCode=1&vehicleNo=HR05AB1234
         // ==================================================
-        
-        
+
+
         [HttpGet("GetTransportStudentsByVehicle")]
         public IActionResult GetTransportStudentsByVehicle(
             int userId,
