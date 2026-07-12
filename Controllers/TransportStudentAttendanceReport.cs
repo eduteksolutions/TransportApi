@@ -20,7 +20,7 @@ namespace TransportApi.Controllers
         public IActionResult TransportAttendanceReport(
             DateTime fromDate,
             DateTime toDate,
-            int vCd = 0,
+            string vehicleno ,
             int routeId = 0,
 
             int userId = 0)
@@ -37,7 +37,7 @@ namespace TransportApi.Controllers
 
                 cmd.Parameters.AddWithValue("@FromDate", fromDate);
                 cmd.Parameters.AddWithValue("@ToDate", toDate);
-                cmd.Parameters.AddWithValue("@VCd", vCd);
+                cmd.Parameters.AddWithValue("@VehicleNo", vehicleno);
                 cmd.Parameters.AddWithValue("@RouteID", routeId);
                 cmd.Parameters.AddWithValue("@UserID", userId);
 
