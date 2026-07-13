@@ -44,7 +44,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<GpsService>();
 builder.Services.AddHostedService<GpsBackgroundService>();
 builder.Services.AddScoped<SmsService>();
-
+builder.Services.AddScoped<NotificationService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddHttpClient<BusProximityService>();

@@ -15,7 +15,11 @@ namespace TransportApi.Data
         public DbSet<SchoolGpsSetting> SchoolGpsSettings { get; set; }
         public DbSet<StudentLocation> StudentLocations { get; set; }
         public DbSet<TransportBusProximityNotificationLogs> TransportBusProximityNotificationLogs { get; set; }
+        public DbSet<Admission> Admission { get; set; }
+        public DbSet<AdmissionDtl> AdmissionDTl { get; set; }
+        public DbSet<TransportStationMaster> TransportStationMaster { get; set; }
 
+       
 
     }
 }
