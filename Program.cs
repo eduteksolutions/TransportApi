@@ -44,8 +44,12 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<GpsService>();
 builder.Services.AddHostedService<GpsBackgroundService>();
 builder.Services.AddScoped<SmsService>();
-builder.Services.AddScoped<NotificationService>();
+
 builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+});
 
 builder.Services.AddHttpClient<BusProximityService>();
 builder.Services.AddScoped<BusProximityService>();
@@ -57,9 +61,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.AllowAnyOrigin()
+            // SetIsOriginAllowed(_ => true) allows all origins dynamically,
+            // which safely permits you to chain .AllowCredentials()
+            policy.SetIsOriginAllowed(_ => true)
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // Required for SignalR streaming
         });
 });
 
