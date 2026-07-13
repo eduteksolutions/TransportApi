@@ -127,7 +127,8 @@ namespace TransportApi.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("GPS SERVICE ERROR");
+                Console.WriteLine(ex.ToString());
             }
         }
     }
