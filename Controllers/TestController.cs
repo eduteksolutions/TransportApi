@@ -1,48 +1,42 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Mvc;
 using TransportApi.Models;
+using TransportApi.Services;
 
 namespace TransportApi.Controllers
 {
-    // Controllers/TestController.cs
     [ApiController]
     [Route("api/test")]
     public class TestController : ControllerBase
     {
-        private readonly IHubContext<DataHub> _hub;
+        private readonly BusProximityService _proximityService;
 
-        public TestController(IHubContext<DataHub> hub)
+        // Removed IHubContext<DataHub> dependency entirely to prevent startup/null crashes
+        public TestController(BusProximityService proximityService)
         {
-            _hub = hub;
+            _proximityService = proximityService;
         }
 
         [HttpPost("send-fake-location")]
-        public async Task<IActionResult> SendFakeLocation(
-            [FromBody] FakeLocationRequest request)
+        public async Task<IActionResult> SendFakeLocation([FromBody] FakeLocationRequest request)
         {
-            var dto = new DeviceLocationDto
+            try
             {
-                SchoolId = request.SchoolId,
-                DeviceId = request.DeviceId.Trim().ToUpper(),
-                Latitude = request.Latitude,
-                Longitude = request.Longitude,
-                Speed = request.Speed,
-                Course = request.Course,
-            };
+                var deviceIdClean = request.DeviceId?.Trim().ToUpper() ?? "UNKNOWN";
 
-            var group = $"{request.SchoolId}_{dto.DeviceId}";
+                // Trigger the proximity logic pipeline directly
+                await _proximityService.CheckAndNotifyAsync(
+                    schoolId: request.SchoolId,
+                    deviceId: deviceIdClean,
+                    busLat: request.Latitude,
+                    busLng: request.Longitude
+                );
 
-            await _hub.Clients
-                .Group(group)
-                .SendAsync("ReceiveLocation", dto);
-
-            return Ok(new
+                return Ok(new { status = "Success", message = "Proximity service pipeline triggered successfully!" });
+            }
+            catch (Exception ex)
             {
-                message = "Location sent",
-                group,
-                dto
-            });
+                return StatusCode(500, new { status = "Error", message = ex.Message });
+            }
         }
     }
 

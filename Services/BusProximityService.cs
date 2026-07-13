@@ -1,6 +1,7 @@
-﻿// Services/BusProximityService.cs
-using TransportApi.Data;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using TransportApi.Data;
+using TransportApi.Hubs;
 using TransportApi.Models;
 
 namespace TransportApi.Services
@@ -10,118 +11,157 @@ namespace TransportApi.Services
         private readonly ApplicationDbContext _context;
         private readonly HttpClient _http;
         private readonly ILogger<BusProximityService> _logger;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        // Cooldown — don't re-notify same student+bus within 5 minutes
         private static readonly Dictionary<string, DateTime> _lastNotified = new();
         private static readonly TimeSpan CooldownPeriod = TimeSpan.FromMinutes(5);
         private const double ProximityMeters = 100.0;
-
-        // Your existing notification API base URL
-        private const string NotificationBaseUrl =
-            "https://eduteksolutions.in/info/"; // 👈 replace with your real base URL
+        private const string NotificationBaseUrl = "https://eduteksolutions.in/info/";
 
         public BusProximityService(
             ApplicationDbContext context,
             HttpClient http,
-            ILogger<BusProximityService> logger)
+            ILogger<BusProximityService> logger,
+            IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _http = http;
             _logger = logger;
+            _hubContext = hubContext;
         }
 
-        public async Task CheckAndNotifyAsync(
-            string deviceId,
-            double busLat,
-            double busLng)
+        public async Task CheckAndNotifyAsync(int schoolId, string deviceId, double busLat, double busLng)
         {
             try
             {
-                // 1️⃣ Get latest location of all students assigned to this bus
-                var students = await _context.StudentLocations
-    .GroupBy(s => s.AdmCd)
-    .Select(g => g.OrderByDescending(x => x.CreatedAt).First())
-    .ToListAsync();
+                var deviceIdClean = deviceId?.Trim().ToUpper() ?? "UNKNOWN";
 
-                if (!students.Any())
+                Console.WriteLine($"[TRACK] Starting proximity check for School: {schoolId}, Device: {deviceIdClean}");
+
+                // 1. Fetch data by evaluating cross-table matching cleanly
+                var studentStations = await (from student in _context.Admission
+                                             from station in _context.TransportStationMaster
+                                             where student.UserID == schoolId
+                                                && student.PickupStationCd == station.StCode
+                                                && student.UserID == station.UserID
+                                             select new
+                                             {
+                                                 student.AdmCd,
+                                                 student.UserID,
+                                                 StudentName = student.FirstName,
+                                                 StationName = station.StName,
+                                                 Latitude = station.Latitude,
+                                                 Longitude = station.Longitude
+                                             })
+                                             .ToListAsync();
+
+                Console.WriteLine($"[TRACK POINT A] Query complete. Found {studentStations.Count} total records matching School ID {schoolId} in the database join.");
+
+                if (!studentStations.Any())
                 {
-                    _logger.LogInformation(
-                        "No students found for device {DeviceId}", deviceId);
+                    _logger.LogInformation("No student stations found matching School ID {SchoolId}", schoolId);
                     return;
                 }
 
-                foreach (var student in students)
+                bool standardLogsPending = false;
+
+                foreach (var item in studentStations)
                 {
-                    // 2️⃣ Calculate distance using Haversine formula
-                    var distance = DistanceService.GetDistanceMeters(
-                        busLat, busLng,
-                        student.Latitude, student.Longitude);
+                    Console.WriteLine($"[TRACK] Processing loop item for Student: {item.AdmCd}, Station: {item.StationName}");
 
-                    _logger.LogInformation(
-                        "Bus {DeviceId} → Student {AdmCd}: {Distance:F1}m",
-                        deviceId, student.AdmCd, distance);
-
-                    // 3️⃣ Skip if bus is not within 100 meters
-                    if (distance > ProximityMeters) continue;
-
-                    // 4️⃣ Cooldown check — prevent spam notifications
-                    var cooldownKey = $"{deviceId}:{student.AdmCd}";
-                    if (_lastNotified.TryGetValue(cooldownKey, out var lastSent) &&
-                        DateTime.UtcNow - lastSent < CooldownPeriod)
+                    // Null safety guard
+                    if (item.Latitude == null || item.Longitude == null)
                     {
-                        _logger.LogInformation(
-                            "Cooldown active for {Key}, skipping", cooldownKey);
+                        Console.WriteLine($"[TRACK WARNING] Skipped Student {item.AdmCd} because Latitude or Longitude is NULL in database.");
                         continue;
                     }
 
-                    // 5️⃣ Call your existing notification API
-                    await SendExistingNotificationAsync(
-                        admCd: student.AdmCd,
-                        userId: student.UserId,
-                        message: $"🚌 Your school bus is {distance:F0}m away! Please get ready.");
+                    double stationLat = Convert.ToDouble(item.Latitude);
+                    double stationLng = Convert.ToDouble(item.Longitude);
 
-                    // 6️⃣ Update cooldown
+                    // 2. Calculate Distance
+                    double distance = CalculateDistanceMeters(busLat, busLng, stationLat, stationLng);
+                    _logger.LogInformation("Bus {Device} → Station {Station}: {Dist:F1}m", deviceIdClean, item.StationName, distance);
+
+                    // 🔥 PRODUCTION GUARD: Skip tracking updates if the vehicle is outside the 100-meter boundary
+                    if (distance > ProximityMeters)
+                    {
+                        Console.WriteLine($"[TRACK] Student {item.AdmCd} skipped. Bus is too far away ({distance:F0}m).");
+                        continue;
+                    }
+
+                    // 4. Cooldown Check
+                    var cooldownKey = $"{deviceIdClean}:{item.AdmCd}";
+                    if (_lastNotified.TryGetValue(cooldownKey, out var lastSent) &&
+                        DateTime.UtcNow - lastSent < CooldownPeriod)
+                    {
+                        Console.WriteLine($"[TRACK POINT B] Cooldown active for key {cooldownKey}. Skipping notification write.");
+                        continue;
+                    }
+
+                    // 5. Channel A: Push SignalR real-time event
+                    try
+                    {
+                        await _hubContext.Clients
+                            .Group($"Student_{item.AdmCd}")
+                            .SendAsync("StudentNotification", new
+                            {
+                                title = "Bus Arriving",
+                                message = $"Bus is {Math.Round(distance)} meters from {item.StationName}",
+                                admCd = item.AdmCd,
+                                station = item.StationName,
+                                deviceId = deviceIdClean
+                            });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed sending SignalR message to Student_{Id}", item.AdmCd);
+                    }
+
+                    // Channel B: Push Rest API External Message
+                    await SendExternalNotificationAsync(
+                        admCd: item.AdmCd.ToString(),
+                        userId: item.UserID?.ToString() ?? "0",
+                        message: $"Your school bus is {distance:F0}m away from {item.StationName}! Please get ready.");
+
                     _lastNotified[cooldownKey] = DateTime.UtcNow;
 
-                    // 7️⃣ Log to DB
+                    // 7. Add Log entry to Context
                     _context.TransportBusProximityNotificationLogs.Add(new TransportBusProximityNotificationLogs
                     {
-                        AdmCd = student.AdmCd,
-                        DeviceId = deviceId,
+                        AdmCd = item.AdmCd.ToString(),
+                        UserId = item.UserID?.ToString() ?? "0", // 🔥 FIX: Logs the correct School ID string cleanly now!
+                        DeviceId = deviceIdClean,
                         BusLat = busLat,
                         BusLng = busLng,
-                        StudentLat = student.Latitude,
-                        StudentLng = student.Longitude,
+                        StudentLat = stationLat,
+                        StudentLng = stationLng,
                         DistanceMeters = distance,
                         SentAt = DateTime.UtcNow
                     });
 
-                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"[TRACK SUCCESS] Log row staged for Student {item.AdmCd}!");
+                    standardLogsPending = true;
+                }
 
-                    _logger.LogInformation(
-                        "✅ Notified student {AdmCd} — bus is {Distance:F0}m away",
-                        student.AdmCd, distance);
+                if (standardLogsPending)
+                {
+                    Console.WriteLine("[TRACK] Saving changes to SQL Server database...");
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine("[TRACK COMPLETE] Database transaction committed successfully.");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ BusProximityService error");
+                _logger.LogError(ex, "Error processing pipeline context loops inside service execution");
             }
         }
 
-        // ══════════════════════════════════════════════
-        // Calls your existing SendPushNotificationAdmCdBy API
-        // ══════════════════════════════════════════════
-        private async Task SendExistingNotificationAsync(
-            string admCd,
-            string userId,
-            string message)
+        private async Task SendExternalNotificationAsync(string admCd, string userId, string message)
         {
             try
             {
                 var today = DateTime.Now.ToString("yyyy-MM-dd");
-              
-                // Build exact same URL your Flutter app uses
                 var url = $"{NotificationBaseUrl}api/SendPushNotificationAdmCdBy"
                         + $"?noticesubject=Notification"
                         + $"&noticetext={Uri.EscapeDataString(message)}"
@@ -130,25 +170,26 @@ namespace TransportApi.Services
                         + $"&admcd={admCd}";
 
                 var response = await _http.GetAsync(url);
-                var body = await response.Content.ReadAsStringAsync();
-
                 if (response.IsSuccessStatusCode)
                 {
-                    _logger.LogInformation(
-                        "✅ Notification sent to {AdmCd}: {Body}", admCd, body);
-                }
-                else
-                {
-                    _logger.LogWarning(
-                        "⚠️ Notification API returned {Status} for {AdmCd}: {Body}",
-                        response.StatusCode, admCd, body);
+                    _logger.LogInformation("External push successfully dispatched to {Id}", admCd);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,
-                    "❌ SendExistingNotificationAsync failed for {AdmCd}", admCd);
+                _logger.LogError(ex, "Failed forwarding Rest payload call to provider service framework");
             }
+        }
+
+        private double CalculateDistanceMeters(double lat1, double lon1, double lat2, double lon2)
+        {
+            const double R = 6371000;
+            double dLat = (lat2 - lat1) * Math.PI / 180;
+            double dLon = (lon2 - lon1) * Math.PI / 180;
+            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+                     + Math.Cos(lat1 * Math.PI / 180) * Math.Cos(lat2 * Math.PI / 180)
+                     * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
         }
     }
 }

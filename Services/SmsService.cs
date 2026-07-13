@@ -19,37 +19,7 @@ namespace TransportApi.Services
            
         }
 
-        public async Task SendSmsAsync(string toPhoneNumber, string message)
-        {
-            var username = _configuration["SmsSettings:Username"];
-            var password = _configuration["SmsSettings:Password"];
-            var senderId = _configuration["SmsSettings:SenderId"];
-            var entityId = _configuration["SmsSettings:DltPrincipalEntityId"];
-            var templateId = _configuration["SmsSettings:DltContentId"];
-
-            var url =
-                $"https://sms.omnitechintegrators.com/fe/api/v1/multiSend" +
-                $"?username={Uri.EscapeDataString(username)}" +
-                $"&password={Uri.EscapeDataString(password)}" +
-                $"&unicode=false" +
-                $"&from={Uri.EscapeDataString(senderId)}" +
-                $"&to={Uri.EscapeDataString(toPhoneNumber)}" +
-                $"&dltContentId={Uri.EscapeDataString(templateId)}" +
-                $"&dltPrincipalEntityId={Uri.EscapeDataString(entityId)}" +
-                $"&text={Uri.EscapeDataString(message)}";
-
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"SMS sending failed. Status Code: {response.StatusCode}");
-            }
-
-            var result = await response.Content.ReadAsStringAsync();
-
-            // Optional: Log or return the response
-            Console.WriteLine(result);
-        }
+    
     }
 
 }

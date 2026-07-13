@@ -1,7 +1,10 @@
-﻿namespace TransportApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TransportApi.Models
 {
     public class TransportStationMaster
     {
+        [Key]
         public int StCode { get; set; }
         public string StName { get; set; }
         public int SubRtCd { get; set; }

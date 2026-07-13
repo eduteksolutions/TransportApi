@@ -50,10 +50,10 @@ namespace TransportApi.Controllers
 
             await cmd.ExecuteNonQueryAsync();
 
-            await _smsService.SendSmsAsync(
+          /*  await _smsService.SendSmsAsync(
                  request.MobileNo,
                 $"Your OTP is {otp}. It is valid for 5 minutes."
-            );
+            );*/
 
            
             return Ok(new

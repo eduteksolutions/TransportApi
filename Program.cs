@@ -6,6 +6,7 @@ using static System.Net.WebRequestMethods;
 using TransportApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using TransportApi.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,7 +55,7 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddHttpClient<BusProximityService>();
 builder.Services.AddScoped<BusProximityService>();
 
-
+builder.Services.AddScoped<INotificationService, NotificationService>();
 // ================= CORS =================
 builder.Services.AddCors(options =>
 {
@@ -89,6 +90,7 @@ app.MapControllers();
 
 // ================= SIGNALR HUB =================
 app.MapHub<DataHub>("/dataHub");
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.Run();
 
