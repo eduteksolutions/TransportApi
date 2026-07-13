@@ -69,16 +69,16 @@ namespace TransportApi.Services
                         SchoolId = schoolId,
                         DeviceId = deviceId,
 
-                        Latitude = device["latitude"]?.ToObject<double>() ?? 0,
-                        Longitude = device["longitude"]?.ToObject<double>() ?? 0,
+                        Latitude = device["latitude"]?.Value<double>() ?? 0,
+                        Longitude = device["longitude"]?.Value<double>() ?? 0,
 
-                        Speed = device["speed"]?.ToObject<double>(),
-                        Altitude = device["altitude"]?.ToObject<double>(),
-                        Course = device["course"]?.ToObject<double>(),
+                        Speed = device["speed"]?.Value<double?>(),
+                        Altitude = device["altitude"]?.Value<double?>(),
+                        Course = device["course"]?.Value<double?>(),
 
-                        Ignition = device["attributes"]?["ignition"]?.ToObject<bool>(),
-                        BatteryLevel = device["attributes"]?["batteryLevel"]?.ToObject<double>(),
-                        Motion = device["attributes"]?["motion"]?.ToObject<bool>(),
+                        Ignition = device["attributes"]?["ignition"]?.Value<bool?>(),
+                        BatteryLevel = device["attributes"]?["batteryLevel"]?.Value<double?>(),
+                        Motion = device["attributes"]?["motion"]?.Value<bool?>(),
 
                         RawData = device.ToString()
                     };
