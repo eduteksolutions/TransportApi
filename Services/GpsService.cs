@@ -46,7 +46,7 @@ namespace TransportApi.Services
 
                 var logsToSave = new List<VehicleDeviceLiveLocation>();
                 var signalRTasks = new List<Task>();
-                var currentTime = DateTime.UtcNow;
+                var currentTime = DateTime.Now;
 
                 foreach (var device in devices)
                 {
