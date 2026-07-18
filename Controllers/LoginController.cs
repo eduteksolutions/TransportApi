@@ -120,7 +120,7 @@ namespace TransportApi.Controllers
                 string insertQuery = @"INSERT INTO OTPhistroytbl
        (MobileNo,OTP,Status,ctime_Stamp,userID,UserType)
        VALUES
-       (@MobileNo,@OTP,'N',GETUTCDATE(),@UserId,@UserType)";
+       (@MobileNo,@OTP,'N',GetDate(),@UserId,@UserType)";
 
                 using SqlCommand cmd = new SqlCommand(insertQuery, con);
                 cmd.Parameters.AddWithValue("@MobileNo", request.MobileNo);
