@@ -310,8 +310,8 @@ namespace TransportApi.Controllers
 
                 string updateDevice = @"
         UPDATE Faculty_Login_Deatils
-        SET mbl_Device_ID=@DeviceId,
-            mbl_Device_Type=@DeviceType
+        SET mbl_DeviceId=@DeviceId,
+            mbl_DeviceType=@DeviceType
         WHERE Faculty_Cd=@FacultyCd
         AND UserID=@UserId";
                 
