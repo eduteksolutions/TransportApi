@@ -176,7 +176,8 @@ namespace TransportApi.Controllers
 
         [HttpPost("LoginWithOTP")]
 
-      
+
+       
         public async Task<IActionResult> LoginWithOTP([FromBody] LoginOtpRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.DeviceId))
@@ -198,7 +199,6 @@ namespace TransportApi.Controllers
                 });
             }
 
-
             try
             {
                 using SqlConnection con = new SqlConnection(
@@ -206,32 +206,24 @@ namespace TransportApi.Controllers
 
                 await con.OpenAsync();
 
-
-                int userId = 0;
-
-
                 // ---------------- VERIFY OTP ----------------
 
                 string otpQuery = @"
-        SELECT TOP 1 UserID
-        FROM OTPhistroytbl
-        WHERE LTRIM(RTRIM(MobileNo))=@MobileNo
-        AND LTRIM(RTRIM(OTP))=@OTP
-        AND LTRIM(RTRIM(Status))='N'
-        AND ctime_Stamp >= DATEADD(MINUTE,-10,GETDATE())
-        ORDER BY ID DESC";
-
+SELECT COUNT(*)
+FROM OTPhistroytbl
+WHERE MobileNo=@MobileNo
+AND OTP=@OTP
+AND Status='N'
+AND ctime_Stamp >= DATEADD(MINUTE,-10,GETDATE())";
 
                 using (SqlCommand cmd = new SqlCommand(otpQuery, con))
                 {
                     cmd.Parameters.AddWithValue("@MobileNo", request.MobileNo.Trim());
                     cmd.Parameters.AddWithValue("@OTP", request.OTP.Trim());
 
+                    int count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
 
-                    object result = await cmd.ExecuteScalarAsync();
-
-
-                    if (result == null)
+                    if (count == 0)
                     {
                         return Ok(new
                         {
@@ -239,58 +231,27 @@ namespace TransportApi.Controllers
                             message = "Invalid or expired OTP."
                         });
                     }
-
-
-                    userId = Convert.ToInt32(result);
                 }
 
+                // ---------------- GET USERID & FACULTY CODE ----------------
 
-
-                // ---------------- UPDATE OTP STATUS ----------------
-
-                string updateOtp = @"
-        UPDATE OTPhistroytbl
-        SET Status='Y'
-        WHERE MobileNo=@MobileNo
-        AND OTP=@OTP
-        AND UserID=@UserID";
-
-
-                using (SqlCommand cmd = new SqlCommand(updateOtp, con))
-                {
-                    cmd.Parameters.AddWithValue("@MobileNo", request.MobileNo);
-                    cmd.Parameters.AddWithValue("@OTP", request.OTP);
-                    cmd.Parameters.AddWithValue("@UserID", userId);
-
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-
-
-
-                // ---------------- CHECK FACULTY ----------------
-
+                int userId = 0;
                 int facultyCode = 0;
 
-
                 string facultyQuery = @"
-        SELECT TOP 1
-            code AS Faculty_Cd
-        FROM HRDStaffMaster
-        WHERE Phone=@MobileNo
-        AND UserID=@UserId";
-
+SELECT TOP 1
+    UserID,
+    code AS Faculty_Cd
+FROM HRDStaffMaster
+WHERE Phone=@MobileNo";
 
                 using (SqlCommand cmd = new SqlCommand(facultyQuery, con))
                 {
                     cmd.Parameters.AddWithValue("@MobileNo", request.MobileNo);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
 
+                    using SqlDataReader reader = await cmd.ExecuteReaderAsync();
 
-                    object result = await cmd.ExecuteScalarAsync();
-
-
-                    if (result == null)
+                    if (!await reader.ReadAsync())
                     {
                         return Ok(new
                         {
@@ -299,23 +260,34 @@ namespace TransportApi.Controllers
                         });
                     }
 
-
-                    facultyCode = Convert.ToInt32(result);
+                    userId = Convert.ToInt32(reader["UserID"]);
+                    facultyCode = Convert.ToInt32(reader["Faculty_Cd"]);
                 }
 
+                // ---------------- MARK OTP USED ----------------
 
+                string updateOtp = @"
+UPDATE OTPhistroytbl
+SET Status='Y'
+WHERE MobileNo=@MobileNo
+AND OTP=@OTP";
 
+                using (SqlCommand cmd = new SqlCommand(updateOtp, con))
+                {
+                    cmd.Parameters.AddWithValue("@MobileNo", request.MobileNo);
+                    cmd.Parameters.AddWithValue("@OTP", request.OTP);
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
 
                 // ---------------- UPDATE DEVICE ----------------
 
                 string updateDevice = @"
-        UPDATE Faculty_Login_Deatils
-        SET mbl_DeviceId=@DeviceId,
-            mbl_DeviceType=@DeviceType
-        WHERE Faculty_Cd=@FacultyCd
-        AND UserID=@UserId";
-                
-
+UPDATE Faculty_Login_Deatils
+SET mbl_DeviceId=@DeviceId,
+    mbl_DeviceType=@DeviceType
+WHERE Faculty_Cd=@FacultyCd
+AND UserID=@UserID";
 
                 using (SqlCommand cmd = new SqlCommand(updateDevice, con))
                 {
@@ -327,37 +299,29 @@ namespace TransportApi.Controllers
                     await cmd.ExecuteNonQueryAsync();
                 }
 
-
-
-
-                // ---------------- GET FACULTY DATA ----------------
-
-                object facultyData = null;
-
+                // ---------------- GET FACULTY PROFILE ----------------
 
                 string profileQuery = @"
-        SELECT
-            code AS Faculty_Cd,
-            sName AS Faculty_Name,
-            Phone AS Mobile,
-            pic AS Pic,
-            Qualification,
-            Address,
-            UserID
-        FROM HRDStaffMaster
-        WHERE code=@FacultyCd
-        AND UserID=@UserID";
+SELECT TOP 1
+    UserID,
+    code AS Faculty_Cd,
+    sName AS Faculty_Name,
+    Phone AS Mobile,
+    pic AS Pic,
+    Qualification,
+    Address
+FROM HRDStaffMaster
+WHERE code=@FacultyCd
+AND UserID=@UserID";
 
-
+                object facultyData = null;
 
                 using (SqlCommand cmd = new SqlCommand(profileQuery, con))
                 {
                     cmd.Parameters.AddWithValue("@FacultyCd", facultyCode);
                     cmd.Parameters.AddWithValue("@UserID", userId);
 
-
                     using SqlDataReader reader = await cmd.ExecuteReaderAsync();
-
 
                     if (!await reader.ReadAsync())
                     {
@@ -368,44 +332,30 @@ namespace TransportApi.Controllers
                         });
                     }
 
-
                     facultyData = new
                     {
-                        code = 200,
-                        status = true,
-                        message = "Logged Successfully",
-
                         UserID = Convert.ToInt32(reader["UserID"]),
                         Faculty_Cd = Convert.ToInt32(reader["Faculty_Cd"]),
                         Faculty_Name = reader["Faculty_Name"]?.ToString(),
                         Mobile = reader["Mobile"]?.ToString(),
-                        Pic = reader["Pic"]?.ToString(),
                         Qualification = reader["Qualification"]?.ToString(),
-                        Address = reader["Address"]?.ToString()
+                        Address = reader["Address"]?.ToString(),
+                         Pic = reader["Pic"] == DBNull.Value ? "" : reader["Pic"].ToString()
                     };
                 }
 
-
-
-
-
-                // ---------------- JWT TOKEN ----------------
+                // ---------------- GENERATE TOKEN ----------------
 
                 var tokenResult = _jwtService.GenerateToken(userId);
-
-
 
                 return Ok(new
                 {
                     success = true,
                     message = "Login successful.",
-
                     token = tokenResult.Token,
                     expiresOn = tokenResult.Expiry,
-
                     data = facultyData
                 });
-
             }
             catch (Exception ex)
             {
