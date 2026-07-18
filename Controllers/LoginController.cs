@@ -321,17 +321,14 @@ AND ctime_Stamp >= DATEADD(MINUTE,-10,GETDATE())";
                 }
 
                 // Get Teacher Profile
-                string profileQuery = @"
+                string profileQuery = @"a
             SELECT
-                empcode,
-                fName,
-                MobileNo,
-                imagePath,
-                Qualification,
-                Address,
-                UserID
-            FROM TeacherProfile
-            WHERE empcode=@FacultyCd
+                       ID AS FacultyCode,    
+        code,    
+        sName,    
+        Password    
+            FROM HRDStaffMaster
+            WHERE code=@FacultyCd
               AND UserID=@UserId";
 
                 object facultyData = null;
@@ -350,10 +347,10 @@ AND ctime_Stamp >= DATEADD(MINUTE,-10,GETDATE())";
                             code = 200,
                             status = true,
                             message = "Logged Successfully",
-                            Faculty_Cd = reader["empcode"],
-                            Faculty_Name = reader["fName"],
+                            Faculty_Cd = reader["Faculty_Cd"],
+                            Faculty_Name = reader["Faculty_Name"],
                             Mobile = reader["MobileNo"],
-                            Pic = reader["imagePath"],
+                            Pic = reader["pic"],
                             Qualification = reader["Qualification"],
                             Address = reader["Address"],
                             UserID = reader["UserID"]
