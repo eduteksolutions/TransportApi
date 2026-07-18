@@ -309,11 +309,12 @@ namespace TransportApi.Controllers
                 // ---------------- UPDATE DEVICE ----------------
 
                 string updateDevice = @"
-        UPDATE HRDStaffMaster
+        UPDATE Faculty_Login_Deatils
         SET mbl_Device_ID=@DeviceId,
             mbl_Device_Type=@DeviceType
-        WHERE code=@FacultyCd
+        WHERE Faculty_Cd=@FacultyCd
         AND UserID=@UserId";
+                
 
 
                 using (SqlCommand cmd = new SqlCommand(updateDevice, con))
