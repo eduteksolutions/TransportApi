@@ -206,12 +206,12 @@ namespace TransportApi.Controllers
 
                 // Verify OTP
                 string otpQuery = @"
-            SELECT COUNT(*)
-            FROM OTPhistroytbl
-            WHERE MobileNo=@MobileNo
-              AND OTP=@OTP
-              AND Status='N'
-              AND ctime_Stamp>=DATEADD(MINUTE,-10,GETDATE())";
+SELECT COUNT(*)
+FROM OTPhistroytbl
+WHERE LTRIM(RTRIM(MobileNo))=@MobileNo
+AND LTRIM(RTRIM(OTP))=@OTP
+AND LTRIM(RTRIM(Status))='N'
+AND ctime_Stamp >= DATEADD(MINUTE,-10,GETDATE())";
 
                 using (SqlCommand cmd = new SqlCommand(otpQuery, con))
                 {
