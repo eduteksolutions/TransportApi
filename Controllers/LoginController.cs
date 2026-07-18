@@ -175,7 +175,7 @@ namespace TransportApi.Controllers
         }
 
         [HttpPost("LoginWithOTP")]
-        [HttpPost("LoginWithOTP")]
+       
         public async Task<IActionResult> LoginWithOTP([FromBody] LoginOtpRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.DeviceId))
