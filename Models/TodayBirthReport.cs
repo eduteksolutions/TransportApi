@@ -19,6 +19,7 @@ namespace TransportApi.Models
         public string? ContactNo { get; set; }
         public DateTime? BirthDate { get; set; }
         public string? ICardPhoto { get; set; }
+        public string? mbl_Device_ID { get; set; }
 
     }
 }
