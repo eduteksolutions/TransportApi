@@ -7,6 +7,7 @@ using TransportApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TransportApi.Hubs;
+using TransportApi.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,8 @@ builder.Services.AddHttpClient<BusProximityService>();
 builder.Services.AddScoped<BusProximityService>();
 
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ReportRepository>();
+
 // ================= CORS =================
 builder.Services.AddCors(options =>
 {
