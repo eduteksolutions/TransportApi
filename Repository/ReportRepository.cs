@@ -14,7 +14,7 @@ namespace TransportApi.Repository
             _context = context;
         }
 
-        public async Task<List<TodayBirthReport>> GetTodayBirthDayList(int userId)
+        public async Task<List<TodayBirthReport>> GetTodayBirthDayList()
         {
          
 
