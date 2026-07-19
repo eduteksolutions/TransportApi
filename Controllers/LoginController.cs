@@ -340,7 +340,7 @@ AND UserID=@UserID";
                         Mobile = reader["Mobile"]?.ToString(),
                         Qualification = reader["Qualification"]?.ToString(),
                         Address = reader["Address"]?.ToString(),
-                         Pic = reader["Pic"] == DBNull.Value ? "" : reader["Pic"].ToString()
+                        Pic = reader["Pic"] == DBNull.Value ? "" : reader["Pic"].ToString()
                     };
                 }
 

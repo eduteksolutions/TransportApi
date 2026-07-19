@@ -19,7 +19,7 @@ namespace TransportApi.Data
         public DbSet<AdmissionDtl> AdmissionDTl { get; set; }
         public DbSet<TransportStationMaster> TransportStationMaster { get; set; }
 
-       
+        public DbSet<TodayBirthReport> TodayBirthReports { get; set; }
 
     }
 }
