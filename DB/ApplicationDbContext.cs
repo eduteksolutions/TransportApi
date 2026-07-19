@@ -10,6 +10,12 @@ namespace TransportApi.Data
         { 
             
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<TodayBirthReport>().HasNoKey();
+        }
         public DbSet<VehicleLiveLocation> VehicleLiveLocations { get; set; }
         public DbSet<VehicleDeviceLiveLocation> VehicleDeviceLiveLocations { get; set; }
         public DbSet<SchoolGpsSetting> SchoolGpsSettings { get; set; }
