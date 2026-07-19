@@ -15,7 +15,7 @@ namespace TransportApi.Controllers
             _repository = repository;
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var result = await _repository.GetTodayBirthDayList();
