@@ -26,6 +26,8 @@ namespace TransportApi.Data
         public DbSet<TransportStationMaster> TransportStationMaster { get; set; }
 
         public DbSet<TodayBirthReport> TodayBirthReports { get; set; }
+        public DbSet<Student_Login_Details> Student_Login_Details { get; set; }
+
 
     }
 }

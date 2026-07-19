@@ -40,7 +40,95 @@ namespace TransportApi.Controllers
             _configuration = configuration;
             _notificationService = notificationService;
         }
+        
+        [HttpGet("api/SendPushNotificationToAll")]
+        public async Task<IActionResult> SendPushNotificationToAll(
+    string Subject,
+    string Text,
+    int UserID)
+        {
+            try
+            {
+                var deviceTokens = new List<string>();
 
+                using (SqlConnection con = new SqlConnection(
+                    _configuration.GetConnectionString("DefaultConnection")))
+                {
+                    string query = @"
+                SELECT mbl_Device_ID 
+                FROM Student_Login_Details
+                where  mbl_Device_ID IS NOT NULL
+                AND mbl_Device_ID <> ''";
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                
+                        con.Open();
+
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string token = reader["mbl_Device_ID"]?.ToString();
+
+                                if (!string.IsNullOrEmpty(token))
+                                {
+                                    deviceTokens.Add(token);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                int sentCount = 0;
+
+                foreach (var token in deviceTokens)
+                {
+                    await _notificationService.SendMessageAsync(
+                        token,
+                        Subject,
+                        Text
+                    );
+
+                    sentCount++;
+                }
+
+                if (sentCount > 0)
+                {
+                    return Ok(new[]
+                    {
+                new
+                {
+                    Code = "200",
+                    status = "True",
+                    Message = $"Notification sent to {sentCount} students."
+                }
+            });
+                }
+
+                return Ok(new[]
+                {
+            new
+            {
+                Code = "201",
+                status = "False",
+                Message = "No device token found."
+            }
+        });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new[]
+                {
+            new
+            {
+                Code = "500",
+                status = "False",
+                Message = ex.Message
+            }
+        });
+            }
+        }
         [HttpGet("api/firebase/token")]
         public async Task<IActionResult> GetAccessToken()
         {

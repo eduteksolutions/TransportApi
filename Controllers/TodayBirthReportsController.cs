@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TransportApi.Repository;
 using TransportApi.Services;
 
@@ -6,6 +7,7 @@ namespace TransportApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class TodayBirthReportsController : ControllerBase
     {
         private readonly ReportRepository _repository;

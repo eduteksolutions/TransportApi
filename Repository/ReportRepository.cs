@@ -13,7 +13,12 @@ namespace TransportApi.Repository
         {
             _context = context;
         }
-
+        public async Task<List<Student_Login_Details>> GetAllChildrenWithDeviceId()
+        {
+            return await _context.Student_Login_Details
+                .Where(x => !string.IsNullOrEmpty(x.mbl_Device_ID))
+                .ToListAsync();
+        }
         public async Task<List<TodayBirthReport>> GetTodayBirthDayList()
         {
          
