@@ -16,10 +16,10 @@ namespace TransportApi.Repository
 
         public async Task<List<TodayBirthReport>> GetTodayBirthDayList(int userId)
         {
-            var parameter = new SqlParameter("@UserId", userId);
+         
 
             return await _context.TodayBirthReports
-                .FromSqlRaw("EXEC edu.sp_TodayBirthDayList @UserId", parameter)
+                .FromSqlRaw("EXEC sp_TodayBirthDayListAllUser ")
                 .ToListAsync();
         }
     }
