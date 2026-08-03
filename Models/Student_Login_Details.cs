@@ -1,7 +1,10 @@
-﻿namespace TransportApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TransportApi.Models
 {
     public class Student_Login_Details
     {
+        [Key]
         public int AdmCd { get; set; }
         public string Login_Pwd { get; set; }
         public string Login { get; set; }
