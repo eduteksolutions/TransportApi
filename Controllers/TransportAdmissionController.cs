@@ -96,7 +96,7 @@ namespace TransportApi.Controllers
                 con.Open();
 
                 // Check View Rights
-                SqlCommand rightsCmd = new SqlCommand(@"
+                /*SqlCommand rightsCmd = new SqlCommand(@"
                 SELECT COUNT(*)
                 FROM HRDStaffMasterAccess
                 WHERE UserID = @UserID
@@ -117,7 +117,7 @@ namespace TransportApi.Controllers
                         Message = "You do not have permission to view students."
                     });
                 }
-
+                */
                 SqlCommand cmd = new SqlCommand(
                     "[edu].[GetTransportStudentsByVehicle]",
                     con);
