@@ -12,6 +12,7 @@
         public int? ClassCd { get; set; }
         public int? SecCd { get; set; }
         public string? URL_Date_Sheet { get; set; }    // <-- Add '?' here
-        public bool ToFaculty { get; set; }
+        public int ToFaculty { get; set; }
+        public string? IsRead { get; set; }
     }
 }

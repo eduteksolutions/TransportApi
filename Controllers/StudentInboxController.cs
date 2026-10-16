@@ -16,8 +16,79 @@ namespace TransportApi.Controllers
         {
             _configuration = configuration;
         }
+        
+        private int GetIntSafe(SqlDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt32(reader.GetValue(ordinal));
+        }
 
+        private string GetStringSafe(SqlDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? string.Empty : reader.GetValue(ordinal)?.ToString() ?? string.Empty;
+        }
 
+        private DateTime GetDateTimeSafe(SqlDataReader reader, string columnName)
+        {
+            int ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? DateTime.MinValue : reader.GetDateTime(ordinal);
+        }
+        [HttpGet]
+        public IActionResult GetInbox([FromQuery] string instituteID, [FromQuery] string admcd)
+        {
+            try
+            {
+                using SqlConnection con = new SqlConnection(
+                    _configuration.GetConnectionString("DefaultConnection"));
+
+                con.Open();
+
+                string query = @"
+            SELECT * FROM tblStudentInbox 
+            WHERE UserID = @UserID AND AdmCd = @AdmCd
+            ORDER BY tDate DESC";
+
+                using SqlCommand cmd = new SqlCommand(query, con);
+                cmd.Parameters.AddWithValue("@UserID", instituteID);
+                cmd.Parameters.AddWithValue("@AdmCd", admcd);
+
+                using SqlDataReader reader = cmd.ExecuteReader();
+                List<StudentInbox> list = new List<StudentInbox>();
+
+                while (reader.Read())
+                {
+                    list.Add(new StudentInbox
+                    {
+                        AdmCd = GetIntSafe(reader, "AdmCd"),
+                        MsgText = GetStringSafe(reader, "MsgText"),
+                        ImgURL = GetStringSafe(reader, "ImgURL"),
+                        DownLink = GetStringSafe(reader, "DownLink"),
+                        Description = GetStringSafe(reader, "Description"),
+                        TDate = GetDateTimeSafe(reader, "tDate"), // Matches lowercase tDate from your DB
+                        UserID = GetIntSafe(reader, "UserID"),
+                        ClassCd = GetIntSafe(reader, "ClassCd"),
+                        SecCd = GetIntSafe(reader, "SecCd"),
+                        URL_Date_Sheet = GetStringSafe(reader, "URL_Date_Sheet"),
+                        ToFaculty = GetIntSafe(reader, "toFaculty"), // Matches lowercase toFaculty from your DB
+
+                        // If you added the column in SQL, use: GetStringSafe(reader, "IsRead")
+                        // Otherwise, default it to "N" so Flutter can read it:
+                        IsRead = "N"
+                    });
+                }
+
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    status = false,
+                    message = ex.Message
+                });
+            }
+        }
         [HttpPost("Insert")]
         public IActionResult Insert([FromBody] StudentInbox model)
         {
@@ -109,4 +180,6 @@ namespace TransportApi.Controllers
             }
         }
     }
+
+
 }

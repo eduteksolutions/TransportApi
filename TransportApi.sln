@@ -5,7 +5,9 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransportApi", "TransportApi.csproj", "{DC7BD908-DFB6-46E1-B648-44BE768E19A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FacultyApi", "..\..\FacultyApi\FacultyApi\FacultyApi.csproj", "{7460EACE-D228-4F05-AA73-F3C82701B4D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FacultyApi", "..\..\FacultyApi\FacultyApi\FacultyApi.csproj", "{7460EACE-D228-4F05-AA73-F3C82701B4D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcademicApi", "..\..\SchoolAcademicApi\AcademicApi\AcademicApi.csproj", "{48E3E448-A3FA-4A7F-BDDB-6885EFA69982}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{7460EACE-D228-4F05-AA73-F3C82701B4D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7460EACE-D228-4F05-AA73-F3C82701B4D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7460EACE-D228-4F05-AA73-F3C82701B4D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48E3E448-A3FA-4A7F-BDDB-6885EFA69982}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48E3E448-A3FA-4A7F-BDDB-6885EFA69982}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48E3E448-A3FA-4A7F-BDDB-6885EFA69982}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48E3E448-A3FA-4A7F-BDDB-6885EFA69982}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

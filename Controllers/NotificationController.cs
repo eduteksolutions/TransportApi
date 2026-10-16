@@ -51,7 +51,8 @@ namespace TransportApi.Controllers
             {
                 var deviceTokens = new List<string>();
 
-                using (SqlConnection con = new SqlConnection(
+                using (SqlConnection con 
+                    = new SqlConnection(
                     _configuration.GetConnectionString("DefaultConnection")))
                 {
                     string query = @"
